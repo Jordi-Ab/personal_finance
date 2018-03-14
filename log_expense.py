@@ -7,9 +7,9 @@ import os
 # Categories is a subdictionary inside valid categories, that maps
 # numbers to the subcategory name.
 MAIN_CATS = {
-	1: "Food", 
-	2: "Getting Around", 
-	3: "Fun Stuff", 
+        1: "Food", 
+        2: "Getting Around", 
+        3: "Fun Stuff", 
     4: "Health Care", 
     5: "Personal Stuff", 
     6: "Apartment Spends",
@@ -17,46 +17,46 @@ MAIN_CATS = {
 }
 
 SUB_CATS = {
-	"Food":{
-	    1: "Super Market",
-	    2: "Restaurants",
-	    3: "Take-out and bingeing",
-	    4: "Coffe",
-	    5: "Other"
+        "Food":{
+            1: "Super Market",
+            2: "Restaurants",
+            3: "Take-out and bingeing",
+            4: "Coffe",
+            5: "Other"
     }, 
-	"Getting Around":{
-	    1:"Gas",
-	    2:"Parking",
-	    3:"Other"
+        "Getting Around":{
+            1:"Gas",
+            2:"Parking",
+            3:"Other"
     },
-	"Fun Stuff":{
-	    1: "Socializing and Bars",
-	    2: "Hobbies",
-	    3: "Books",
-	    4: "Other"
+        "Fun Stuff":{
+            1: "Socializing and Bars",
+            2: "Hobbies",
+            3: "Books",
+            4: "Other"
     },
-	"Health Care":{
-	    1: "Medicine",
-	    2: "Vitamins",
-	    3: "Supplements",
-	    4: "Other"
+        "Health Care":{
+            1: "Medicine",
+            2: "Vitamins",
+            3: "Supplements",
+            4: "Other"
     },
-	"Personal Stuff":{
-	    1: "Clothing",
-	    2: "Haircut",
-	    3: "Gifts",
-	    4: "Personal Care",
-	    5: "Stuff for me",
-	    6: "Other"
+        "Personal Stuff":{
+            1: "Clothing",
+            2: "Haircut",
+            3: "Gifts",
+            4: "Personal Care",
+            5: "Stuff for me",
+            6: "Other"
     },
     "Apartment Spends":{
-		1: "Services",
-		2: "Stuff for the Apartment",
-		3: "Other"
+                1: "Services",
+                2: "Stuff for the Apartment",
+                3: "Other"
     },
-	"Removed from Savings":{
-	    1: "Trips",
-	    2: "Other"
+        "Removed from Savings":{
+            1: "Trips",
+            2: "Other"
     }
 }
 
@@ -188,9 +188,9 @@ def categoriesTemplate():
         data_frames.append(df)
     template = pd.concat(data_frames, ignore_index = True)
     template.sort_values(
-    	by=['Category', 'Sub Category'], 
-    	inplace = True
-	)
+        by=['Category', 'Sub Category'], 
+        inplace = True
+        )
     return template
 
 def modifyInfo(new_expense):
@@ -248,25 +248,25 @@ for expense in new_expenses:
     amounts.append(expense.getAmount())
 
 data = {
-	'Date':dates, 
-	'MonthNum':month_nums,
+        'Date':dates, 
+        'MonthNum':month_nums,
     'Category':main_categories, 
     'Sub Category':sub_categories,
     'Amount $':amounts
 }
 cols = [
-	'Date', 
-	'MonthNum',
-	'Category', 
-	'Sub Category', 
-	'Amount $'
+        'Date', 
+        'MonthNum',
+        'Category', 
+        'Sub Category', 
+        'Amount $'
 ]
 new_entry = pd.DataFrame(data, columns=cols)
 
 #Concatenate the current data with the new data.
 daily_data = pd.concat(
-	[cur_data, new_entry], 
-	ignore_index=True
+        [cur_data, new_entry], 
+        ignore_index=True
 )
 daily_data.sort_values(by=['Date'], inplace=True)
 daily_data.index = range(len(daily_data))
@@ -283,51 +283,49 @@ if(excel):
     #Pivot to write it in Excel.
     template = categoriesTemplate()
     daily_data_pivot = pd.pivot_table(
-    	daily_data, 
-    	values = 'Amount $',
+        daily_data, 
+        values = 'Amount $',
         columns='Date',
         aggfunc='sum',
         index=['Category', 'Sub Category']
     )
     daily_data_pivot.reset_index(inplace=True)
     daily_data2 = pd.merge(
-    	template, 
-    	daily_data_pivot, 
-		on=['Category', 'Sub Category'], 
-		how='left'
-	)
+        template, 
+        daily_data_pivot, 
+                on=['Category', 'Sub Category'], 
+                how='left'
+        )
                                   
     daily_data2.fillna(0, inplace=True)
     
     #Group Monthly
     monthly_data = daily_data.drop('Date', 1)
     monthly_data=monthly_data.groupby(
-    	['MonthNum','Category', 'Sub Category']
-	).sum()
+        ['MonthNum','Category', 'Sub Category']
+        ).sum()
     monthly_data.reset_index(inplace=True)
     monthly_data_pivot = pd.pivot_table(
-    	monthly_data, 
-		values = 'Amount $',
+        monthly_data, 
+                values = 'Amount $',
         columns='MonthNum',
         aggfunc='sum',
         index=['Category', 'Sub Category']
     )
     monthly_data_pivot.reset_index(inplace=True)
     monthly_data2 = pd.merge(
-    	template, 
-    	monthly_data_pivot,
-    	on=['Category', 'Sub Category'], 
-    	how='left'
-	) 
+        template, 
+        monthly_data_pivot,
+        on=['Category', 'Sub Category'], 
+        how='left'
+        ) 
     monthly_data2.fillna(0, inplace=True)
     
     #Write it in Excel.
-    print(os.getcwd())
     db_path = os.path.join(
-    	os.getcwd(), 
-    	"Personal Finance.xlsm"
-	)
-	print(db_path)
+        os.path.normpath(os.getcwd() + os.sep + os.pardir), # From current directory, one directory back
+        "Personal Finance.xlsm"
+        )
     db_wb = xl.Book(db_path)
     
     d_sheet = db_wb.sheets['Daily Data']
