@@ -7,9 +7,9 @@ import os
 # Categories is a subdictionary inside valid categories, that maps
 # numbers to the subcategory name.
 MAIN_CATS = {
-        1: "Food", 
-        2: "Getting Around", 
-        3: "Fun Stuff", 
+    1: "Food", 
+    2: "Getting Around", 
+    3: "Fun Stuff", 
     4: "Health Care", 
     5: "Personal Stuff", 
     6: "Apartment Spends",
@@ -17,46 +17,46 @@ MAIN_CATS = {
 }
 
 SUB_CATS = {
-        "Food":{
-            1: "Super Market",
-            2: "Restaurants",
-            3: "Take-out and bingeing",
-            4: "Coffe",
-            5: "Other"
+    "Food":{
+        1: "Super Market",
+        2: "Restaurants",
+        3: "Take-out and bingeing",
+        4: "Coffe",
+        5: "Other"
     }, 
-        "Getting Around":{
-            1:"Gas",
-            2:"Parking",
-            3:"Other"
+    "Getting Around":{
+        1:"Gas",
+        2:"Parking",
+        3:"Other"
     },
-        "Fun Stuff":{
-            1: "Socializing and Bars",
-            2: "Hobbies",
-            3: "Books",
-            4: "Other"
+    "Fun Stuff":{
+        1: "Socializing and Bars",
+        2: "Hobbies",
+        3: "Books",
+        4: "Other"
     },
-        "Health Care":{
-            1: "Medicine",
-            2: "Vitamins",
-            3: "Supplements",
-            4: "Other"
+    "Health Care":{
+        1: "Medicine",
+        2: "Vitamins",
+        3: "Supplements",
+        4: "Other"
     },
-        "Personal Stuff":{
-            1: "Clothing",
-            2: "Haircut",
-            3: "Gifts",
-            4: "Personal Care",
-            5: "Stuff for me",
-            6: "Other"
+    "Personal Stuff":{
+        1: "Clothing",
+        2: "Haircut",
+        3: "Gifts",
+        4: "Personal Care",
+        5: "Stuff for me",
+        6: "Other"
     },
     "Apartment Spends":{
-                1: "Services",
-                2: "Stuff for the Apartment",
-                3: "Other"
+        1: "Services",
+        2: "Stuff for the Apartment",
+        3: "Other"
     },
-        "Removed from Savings":{
-            1: "Trips",
-            2: "Other"
+    "Removed from Savings":{
+        1: "Trips",
+        2: "Other"
     }
 }
 
@@ -217,8 +217,7 @@ from expense import Expense
 new_expenses = []
 
 # ASK USER FOR THE INFO ABOUT THE EXPENSE.
-while(True):
-    
+while(True):    
     new_expense = Expense()
     modifyInfo(new_expense)
 
@@ -248,18 +247,18 @@ for expense in new_expenses:
     amounts.append(expense.getAmount())
 
 data = {
-        'Date':dates, 
-        'MonthNum':month_nums,
+    'Date':dates, 
+    'MonthNum':month_nums,
     'Category':main_categories, 
     'Sub Category':sub_categories,
     'Amount $':amounts
 }
 cols = [
-        'Date', 
-        'MonthNum',
-        'Category', 
-        'Sub Category', 
-        'Amount $'
+    'Date', 
+    'MonthNum',
+    'Category', 
+    'Sub Category', 
+    'Amount $'
 ]
 new_entry = pd.DataFrame(data, columns=cols)
 

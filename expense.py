@@ -7,6 +7,7 @@ class Expense:
 		self._main_category = ''
 		self._sub_category = ''
 		self._amount = 0
+        self._made_with = ''
 
 	def getDate(self):
 		return self._date
@@ -26,6 +27,9 @@ class Expense:
 	def getAmount(self):
 		return self._amount
 
+    def getDeviceUsedToPay(self):
+        return self._made_with
+
 	def setDate(self, year, month, day):
 		self._date = date(year, month, day)
 
@@ -38,11 +42,17 @@ class Expense:
 	def setAmount(self, amount):
 		self._amount = amount
 
+    def setDeviceUsedToPay(self, device):
+        if device not in ['cash', 'debit', 'credit']:
+            raise ValueError('Only "Cash", "Debit" or "Credit" devices are supported.')
+        self._made_with = device
+
 	def toString(self):
 		string = """Expense:
 	Date: """ +self.getDateAsString()+ """
 	Category: """+self._main_category+"""
 	Sub Category: """+self._sub_category+"""
+    Device Used: """+self._made_with+"""
 	Amount: $"""+str(self._amount)
 		return string
 
