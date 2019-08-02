@@ -193,6 +193,63 @@ def categoriesTemplate():
         )
     return template
 
+def load_credit_cards():
+    credit_cards = []
+    for file in os.listdir('credit_cards'):
+        if file.endswith('pkl'):
+            with open('credit_cards/'+file, 'rb') as handle:
+                cc = pickle.load(handle)
+                credit_cards.append(cc)
+    return credit_cards
+
+def list_credit_cards(credit_cards_list):
+    ccs_str = ""
+    for i, cc in enumerate(credit_cards_list):
+        ccs_str += '\n'+str(i)+') '+cc.alias_name
+    return ccs_str
+
+def askForPaymentMethod(an_expense):
+    while(True):
+        method = input("Which payment method was used? ")
+        if (method == 'r'): 
+            raise Exception('restart')
+        elif (method == 'q'): 
+            raise RuntimeError('Quit')
+        elif (method.strip().lower() in ['cash', 'debit']):
+            an_expense.setPaymentMethod(method) 
+            # Payment date becomes the date when the expense was made
+            an_expense.setPaymentDate(an_expense.getDate())
+
+        elif (method.strip().lower() == 'credit'):
+            ccs = load_credit_cards()
+            ccs_str = list_credit_cards(ccs)
+            while True:
+                r = input("""
+I have this cards registered:"""+ccs_str+"""
+
+Enter the number of the card: """)
+                try:
+                    r = int(r)
+                    if r > 0 and r < len(ccs):
+                        cc = ccs[r]
+                        an_expense.setPaymentMethod('credit')
+                        # Payment date becomes the cut date of the credit card
+                        cc_cut_date = cc.get_cut_date
+                        expense_date = an_expense.getDate()
+                        if expense_date.day > cc_cut_date:
+                            #something
+                        else:
+                            # something else
+
+                        # Missing this lines of code
+                        pass
+                    else:
+                        print("Sorry, not available")
+                except ValueError:
+                    print("Sorry, not available")
+        else:
+            print('The only supported methods are: "cash", "credit" or "debit".')
+
 def modifyInfo(new_expense):
     print("""
     Registering a new expense. At any time:
@@ -203,6 +260,7 @@ def modifyInfo(new_expense):
     try:
         askUserForDate(new_expense) # Modifies the date of the expense object
         selectCategory(new_expense)
+        askForPaymentMethod(new_expense)
         askForAmount(new_expense)
     except RuntimeError:
         print('Quit')

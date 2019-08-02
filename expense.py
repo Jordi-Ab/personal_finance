@@ -7,7 +7,8 @@ class Expense:
 		self._main_category = ''
 		self._sub_category = ''
 		self._amount = 0
-        self._made_with = ''
+        self._payment_method = ''
+        self._payment_date = date.today() # Date when the expense should be paid (next month for credit cards)
 
 	def getDate(self):
 		return self._date
@@ -27,8 +28,11 @@ class Expense:
 	def getAmount(self):
 		return self._amount
 
-    def getDeviceUsedToPay(self):
-        return self._made_with
+    def getPaymentMethod(self):
+        return self._payment_method
+
+    def getPaymentDate(self):
+        return self._payment_date
 
 	def setDate(self, year, month, day):
 		self._date = date(year, month, day)
@@ -42,17 +46,20 @@ class Expense:
 	def setAmount(self, amount):
 		self._amount = amount
 
-    def setDeviceUsedToPay(self, device):
-        if device not in ['cash', 'debit', 'credit']:
-            raise ValueError('Only "Cash", "Debit" or "Credit" devices are supported.')
-        self._made_with = device
+    def setPaymentMethod(self, method):
+        if method not in ['cash', 'debit', 'credit']:
+            raise ValueError('Only "Cash", "Debit" or "Credit" methods are supported.')
+        self._payment_method = method
+
+    def setPaymentDate(self, year, month, day):
+        self._payment_date = date(year, month, day)
 
 	def toString(self):
 		string = """Expense:
 	Date: """ +self.getDateAsString()+ """
 	Category: """+self._main_category+"""
 	Sub Category: """+self._sub_category+"""
-    Device Used: """+self._made_with+"""
+    Payment Method: """+self._payment_method+"""
 	Amount: $"""+str(self._amount)
 		return string
 

@@ -1,6 +1,16 @@
 from credit_card_object import CreditCard
 import pickle
 from datetime import datetime
+import os
+
+def load_credit_cards():
+    credit_cards = []
+    for file in os.listdir('credit_cards'):
+        if file.endswith('pkl'):
+            with open('credit_cards/'+file, 'rb') as handle:
+                cc = pickle.load(handle)
+                credit_cards.append(cc)
+    return credit_cards
 
 def askYesOrNo(message):
     while (True):
@@ -55,7 +65,16 @@ your response: """)
         if int(response) == 1:
             register_new_card()
         elif int(response) == 2:
-            print("Sorry, not supported yet, about to come.")
+            credit_cards = load_credit_cards()
+            ccs_str = ""
+            for i, cc in enumerate(credit_cards):
+                ccs_str += '\n'+str(i)+') '+cc.alias_name
+                #print(i, cc.alias_name)
+            input("""
+I have this cards registered:"""+ccs_str+"""
+
+Enter the number of the card you want to modify: """)
+            
         elif int(response) == 3:
             print("Sorry, not supported yet, about to come.")
         elif int(response) == 4:
