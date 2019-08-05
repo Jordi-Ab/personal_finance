@@ -2,7 +2,7 @@ class CreditCard:
 
     def __init__(self):
         self.bank_name = None
-        self.alias = None
+        self.alias_name = None
         self.cut_date = None
 
     def update_bank_name(self, bank_name):
@@ -19,9 +19,9 @@ class CreditCard:
             return bank_name
         raise ValueError("No bank registered for this credit card")
 
-    def get_alias_name(self, alias_name):
+    def get_alias_name(self):
         if self.alias_name:
-            return alias_name
+            return self.alias_name
         raise ValueError("No alias registered for this credit card")
 
     def get_cut_date(self, cut_date):

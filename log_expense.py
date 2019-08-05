@@ -1,6 +1,8 @@
 from datetime import date
 import helper_functions as hlp
+import pickle
 import pandas as pd
+from math import ceil
 import os
 
 # Valid Categories is a dictionary that maps numbers to Categories.
@@ -202,10 +204,12 @@ def load_credit_cards():
                 credit_cards.append(cc)
     return credit_cards
 
-def list_credit_cards(credit_cards_list):
+def list_payment_methods(credit_cards_list):
     ccs_str = ""
     for i, cc in enumerate(credit_cards_list):
         ccs_str += '\n'+str(i)+') '+cc.alias_name
+    ccs_str += '\n'+str(len(credit_cards_list))+') debit'
+    ccs_str += '\n'+str(len(credit_cards_list)+1)+') cash'
     return ccs_str
 
 def get_next_pay_date(payment_date, cut_day):
@@ -221,50 +225,50 @@ def get_next_pay_date(payment_date, cut_day):
 
 def askForPaymentMethod(an_expense):
     while(True):
-        method = input("Which payment method was used? ")
-        if (method == 'r'): 
+        ccs = load_credit_cards()
+        ccs_str = list_payment_methods(ccs)
+        method_num = input("""
+Which payment method was used? """+ccs_str+"""
+
+Enter the number of the method: """)
+        if (method_num == 'r'): 
             raise Exception('restart')
-        elif (method == 'q'): 
+        elif (method_num == 'q'): 
             raise RuntimeError('Quit')
-        elif (method.strip().lower() in ['cash', 'debit']):
-            an_expense.setPaymentMethod(method) 
-            # Payment date becomes the date when the expense was made
-            pay_day = an_expense.getDate()
-            an_expense.setPaymentDate(
-                pay_day.year, 
-                pay_day.month, 
-                pay_day.day
-            )
-
-        elif (method.strip().lower() == 'credit'):
-            ccs = load_credit_cards()
-            ccs_str = list_credit_cards(ccs)
-            while True:
-                r = input("""
-I have this cards registered:"""+ccs_str+"""
-
-Enter the number of the card: """)
-                try:
-                    r = int(r)
-                    if r > 0 and r < len(ccs):
-                        cc = ccs[r+1]
-                        an_expense.setPaymentMethod('credit')
-                        # Payment date becomes the cut date of the credit card
-                        cc_cut_date = cc.get_cut_date
-                        expense_date = an_expense.getDate()
-                        if expense_date.day > cc_cut_date:
-                            #something
-                        else:
-                            # something else
-
-                        # Missing this lines of code
-                        pass
-                    else:
-                        print("Sorry, not available")
-                except ValueError:
-                    print("Sorry, not available")
         else:
-            print('The only supported methods are: "cash", "credit" or "debit".')
+            try:
+                method_num = int(method_num)
+                if method_num < 0 or method_num > len(ccs) + 1:
+                    print("Sorry, not available")
+                elif method_num < len(ccs):
+                    # credit
+                    cc = ccs[method_num]
+                    print(cc.alias_name)
+                    an_expense.setPaymentMethod('credit')
+                    # Payment date becomes the cut date of the credit card
+                    cc_cut_date = cc.cut_date
+                    expense_date = an_expense.getDate()
+                    next_pay_date = get_next_pay_date(expense_date, cc_cut_date)
+                    an_expense.setPaymentDate(
+                        next_pay_date.year, 
+                        next_pay_date.month, 
+                        next_pay_date.day
+                    )
+                    break
+                else:
+                    # debit or cash
+                    print('debit' if method_num == len(ccs) else 'cash')
+                    an_expense.setPaymentMethod('debit' if method_num == len(ccs) else 'cash') 
+                    # Payment date becomes the date when the expense was made
+                    pay_day = an_expense.getDate()
+                    an_expense.setPaymentDate(
+                        pay_day.year, 
+                        pay_day.month, 
+                        pay_day.day
+                    )
+                    break
+            except ValueError:
+                print("Sorry, not available")
 
 def modifyInfo(new_expense):
     print("""
@@ -302,7 +306,7 @@ while(True):
     if(not flag): break
 
 # SAVE THE EXPENSES ON "DATABASE"
-
+raise Exception
 #Get Current Data from csv
 cur_data = pd.read_csv(r'daily_data.txt', sep=' ')
 
