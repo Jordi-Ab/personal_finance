@@ -209,7 +209,7 @@ def list_credit_cards(credit_cards_list):
     return ccs_str
 
 def get_next_pay_date(payment_date, cut_day):
-    next_pay_day = min(ceil(cut_day/15),2)*15
+    next_pay_day = min(ceil(cut_day/15)*15, 31)
     next_pay_date = date(
         day=next_pay_day, 
         month=payment_date.month,
