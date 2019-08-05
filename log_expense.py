@@ -227,7 +227,6 @@ def get_next_pay_date(payment_date, cut_day):
         next_pay_date = next_pay_date + pd.DateOffset(months=1)
     return next_pay_date
 
-
 def askForPaymentMethod(an_expense):
     while(True):
         method = input("Which payment method was used? ")
