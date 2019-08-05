@@ -208,6 +208,26 @@ def list_credit_cards(credit_cards_list):
         ccs_str += '\n'+str(i)+') '+cc.alias_name
     return ccs_str
 
+def get_next_pay_date(payment_date, cut_day):
+    next_pay_day = pd.ceil(cut_day%15)*15
+    if next_pay_day == 30:
+        next_pay_day = hlp.last_day_of_month(
+            date(
+                day=30, 
+                month=payment_date.month,
+                year=payment_date.year
+            )
+        )
+    next_pay_date = date(
+        day=next_pay_day, 
+        month=payment_date.month,
+        year=payment_date.year
+    )
+    if payment_date.day >= cut_day:
+        next_pay_date = next_pay_date + pd.DateOffset(months=1)
+    return next_pay_date
+
+
 def askForPaymentMethod(an_expense):
     while(True):
         method = input("Which payment method was used? ")
@@ -218,7 +238,12 @@ def askForPaymentMethod(an_expense):
         elif (method.strip().lower() in ['cash', 'debit']):
             an_expense.setPaymentMethod(method) 
             # Payment date becomes the date when the expense was made
-            an_expense.setPaymentDate(an_expense.getDate())
+            pay_day = an_expense.getDate()
+            an_expense.setPaymentDate(
+                pay_day.year, 
+                pay_day.month, 
+                pay_day.day
+            )
 
         elif (method.strip().lower() == 'credit'):
             ccs = load_credit_cards()
@@ -231,7 +256,7 @@ Enter the number of the card: """)
                 try:
                     r = int(r)
                     if r > 0 and r < len(ccs):
-                        cc = ccs[r]
+                        cc = ccs[r+1]
                         an_expense.setPaymentMethod('credit')
                         # Payment date becomes the cut date of the credit card
                         cc_cut_date = cc.get_cut_date
