@@ -223,6 +223,25 @@ def get_next_pay_date(payment_date, cut_day):
         next_pay_date = next_pay_date + pd.DateOffset(months=1)
     return next_pay_date
 
+def askForInstallments(an_expense):
+    while(True):
+        if an_expense.getPaymentMethod() == 'credit':
+            # Change number of installments when credit card
+            inst = input("How many installments? ")
+            try:
+                inst = int(inst)
+                if inst > 0 and inst%3==0:
+                    an_expense.setInstallments(inst)
+                    print("Cool, {0} MSI \n".format(inst))
+                    break
+                else:
+                    print("Sorry, not available")
+            except ValueError:
+                print("Sorry, not available")
+        else:
+            # Debit or Cash, default installments are 1
+            break
+
 def askForPaymentMethod(an_expense):
     while(True):
         ccs = load_credit_cards()
@@ -236,39 +255,42 @@ Enter the number of the method: """)
         elif (method_num == 'q'): 
             raise RuntimeError('Quit')
         else:
-            try:
-                method_num = int(method_num)
-                if method_num < 0 or method_num > len(ccs) + 1:
-                    print("Sorry, not available")
-                elif method_num < len(ccs):
-                    # credit
-                    cc = ccs[method_num]
-                    print(cc.alias_name)
-                    an_expense.setPaymentMethod('credit')
-                    # Payment date becomes the cut date of the credit card
-                    cc_cut_date = cc.cut_date
-                    expense_date = an_expense.getDate()
-                    next_pay_date = get_next_pay_date(expense_date, cc_cut_date)
-                    an_expense.setPaymentDate(
-                        next_pay_date.year, 
-                        next_pay_date.month, 
-                        next_pay_date.day
-                    )
-                    break
-                else:
-                    # debit or cash
-                    print('debit' if method_num == len(ccs) else 'cash')
-                    an_expense.setPaymentMethod('debit' if method_num == len(ccs) else 'cash') 
-                    # Payment date becomes the date when the expense was made
-                    pay_day = an_expense.getDate()
-                    an_expense.setPaymentDate(
-                        pay_day.year, 
-                        pay_day.month, 
-                        pay_day.day
-                    )
-                    break
-            except ValueError:
+            #try:
+            method_num = int(method_num)
+            if method_num < 0 or method_num > len(ccs) + 1:
                 print("Sorry, not available")
+            elif method_num < len(ccs):
+                # credit
+                cc = ccs[method_num]
+                print(cc.alias_name+'\n')
+                an_expense.setPaymentMethod('credit')
+                an_expense.setPaymentMethodName(cc.alias_name)
+                # Payment date becomes the cut date of the credit card
+                cc_cut_date = cc.cut_date
+                expense_date = an_expense.getDate()
+                pay_date = get_next_pay_date(expense_date, cc_cut_date)
+                an_expense.setPaymentDate(
+                    pay_date.year, 
+                    pay_date.month, 
+                    pay_date.day
+                )
+                break
+            else:
+                # debit or cash
+                pm = 'debit' if method_num == len(ccs) else 'cash'
+                print(pm+'\n')
+                an_expense.setPaymentMethod(pm)
+                an_expense.setPaymentMethodName(pm)
+                # Payment date becomes the date when the expense was made
+                pay_date = an_expense.getDate()
+                an_expense.setPaymentDate(
+                    pay_date.year, 
+                    pay_date.month, 
+                    pay_date.day
+                )
+                break
+            #except ValueError:
+            #    print("Sorry, not available")
 
 def modifyInfo(new_expense):
     print("""
@@ -277,16 +299,17 @@ def modifyInfo(new_expense):
             the entire expense information logging, 
         * q kills the entire process.
     """)
-    try:
-        askUserForDate(new_expense) # Modifies the date of the expense object
-        selectCategory(new_expense)
-        askForPaymentMethod(new_expense)
-        askForAmount(new_expense)
-    except RuntimeError:
-        print('Quit')
-        quit()
-    except Exception:
-        modifyInfo(new_expense)
+    #try:
+    askUserForDate(new_expense) # Modifies the date of the expense object
+    selectCategory(new_expense)
+    askForPaymentMethod(new_expense)
+    askForInstallments(new_expense)
+    askForAmount(new_expense)
+    #except RuntimeError:
+    #    print('Quit')
+    #    quit()
+    #except Exception:
+    #    modifyInfo(new_expense)
 
 # ---- Main Program ----------------------------------- 
     
@@ -298,45 +321,70 @@ new_expenses = []
 while(True):    
     new_expense = Expense()
     modifyInfo(new_expense)
-
-    new_expenses.append(new_expense)
+    print(new_expense.getInstallments())
+    #if new_expense.getInstallments() > 1:
+    # MSI, so divide the Expense in multiple expenses
+    sub_expenses = new_expense.divideExpense()
+    print([se.getAmount() for se in sub_expenses])
+    #else:
+    new_expenses = new_expenses + sub_expenses
     print("I have just registered this expense:")
     print(new_expense.toString())
     flag = askYesOrNo("Log another expense? ")
     if(not flag): break
 
 # SAVE THE EXPENSES ON "DATABASE"
-raise Exception
+
 #Get Current Data from csv
 cur_data = pd.read_csv(r'daily_data.txt', sep=' ')
 
 #Create a data frame with the new data per Day.
-dates = []
-month_nums = []
+expense_dates = []
+payment_dates = []
+expense_months = []
+payment_months = []
+expenses_installments = []
+expenses_methods = []
+expenses_method_names = []
 main_categories = []
 sub_categories = []
 amounts = []
 
 for expense in new_expenses:
-    dates.append(expense.getDateAsString())
-    month_nums.append(expense.getMonthNum())
+    expense_dates.append(expense.getDateAsString())
+    payment_dates.append(expense.getPaymentDateAsString())
+    expense_months.append(expense.getMonthNum())
+    payment_months.append(expense.getPaymentMonthNum())
+    expenses_installments.append(expense.getInstallments())
+    expenses_methods.append(expense.getPaymentMethod())
+    expenses_method_names.append(expense.getPaymentMethodName())
     main_categories.append(expense.getMainCategory())
     sub_categories.append(expense.getSubCategory())
     amounts.append(expense.getAmount())
 
 data = {
-    'Date':dates, 
-    'MonthNum':month_nums,
-    'Category':main_categories, 
-    'Sub Category':sub_categories,
-    'Amount $':amounts
+    "Expense Day":expense_dates, 
+    "Expense Month":expense_months, 
+    "Payment Day":payment_dates, 
+    "Payment Month":payment_months,
+    "Installments":expenses_installments, 
+    "Payment Method":expenses_methods,
+    "Method Name":expenses_method_names,
+    "Category":main_categories, 
+    "Sub Category":sub_categories,
+    "Amount $":amounts
 }
 cols = [
-    'Date', 
-    'MonthNum',
-    'Category', 
-    'Sub Category', 
-    'Amount $'
+    "Amount $",
+    "Expense Day", 
+    "Expense Month", 
+    "Payment Day", 
+    "Payment Month", 
+    "Installments", 
+    "Payment Method",
+    "Method Name",
+    "Category", 
+    "Sub Category"
 ]
 new_entry = pd.DataFrame(data, columns=cols)
 
@@ -345,7 +393,7 @@ daily_data = pd.concat(
         [cur_data, new_entry], 
         ignore_index=True
 )
-daily_data.sort_values(by=['Date'], inplace=True)
+daily_data.sort_values(by=['Expense Day'], inplace=True)
 daily_data.index = range(len(daily_data))
 
 # Save the new data
