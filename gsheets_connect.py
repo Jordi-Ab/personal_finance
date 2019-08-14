@@ -151,6 +151,10 @@ class GoogleSheets():
             [4,5,6],
             [7,8,9]
         ]
+        Params:
+            gsheet_id: Id of the Google Sheet to write on
+            values_list: two dimensional list [[]]
+            range_start: 
 
 
         """
