@@ -20,4 +20,3 @@ def crossJoin(series, columns):
           i += 1
       result.drop('key', axis=1, inplace=True)
       return result
-

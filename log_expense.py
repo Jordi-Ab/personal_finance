@@ -4,6 +4,7 @@ import pickle
 import pandas as pd
 from math import ceil
 import os
+from gsheets_connect import GoogleSheets
 
 # Valid Categories is a dictionary that maps numbers to Categories.
 # Categories is a subdictionary inside valid categories, that maps
@@ -192,7 +193,7 @@ def categoriesTemplate():
     template.sort_values(
         by=['Category', 'Sub Category'], 
         inplace = True
-        )
+    )
     return template
 
 def load_credit_cards():
@@ -401,6 +402,10 @@ daily_data.to_csv(r'daily_data.txt', index=None, sep=' ')
 print(" ")
 print("Expenses were succesfully uploaded to Database.")
 
+
+
+
+"""
 # SYNC DATA WITH EXCEL
 excel = askYesOrNo("Sync with Excel?: ")
 if(excel):
@@ -463,4 +468,4 @@ if(excel):
     close = askYesOrNo("Close Excel?: ")
     if(close): db_wb.close()
 
-
+"""
