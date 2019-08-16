@@ -46,6 +46,11 @@ class Expense:
     def getPaymentMonthNum(self):
         return int(self._payment_date.strftime('%Y%m'))
 
+    def getPaymentFortnight(self):
+        return self._payment_date.replace(
+            day=15 if self._payment_date.day <= 15 else 30
+        ).strftime('%Y-%m-%d')
+
     def getInstallments(self):
         return self._n_installments
 

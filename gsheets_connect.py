@@ -137,14 +137,13 @@ class GoogleSheets():
 
     def values_to_gsheet(
         self, 
-        gsheet_id,
+        spreadsheet_id,
         values_list, 
-        range_start, 
-        sheet_name, 
+        range_name, 
         value_input_option='RAW'
     ):
         """
-        Writes data to a google sheet, rowwise, starting from "range_start"
+        Writes data to a google sheet, rowwise, starting from "range_name"
         Ex.[
             [col1, col2, col3],
             [1,2,3],
@@ -152,9 +151,9 @@ class GoogleSheets():
             [7,8,9]
         ]
         Params:
-            gsheet_id: Id of the Google Sheet to write on
+            spreadsheet_id: Id of the Google Sheet to write on
             values_list: two dimensional list [[]]
-            range_start: 
+            range_name: 
 
 
         """
@@ -163,20 +162,26 @@ class GoogleSheets():
         
         data = [
             {
-                'range': 'data!A1',
-                'values': list_of_rows.tolist()
+                'range': range_name,
+                'values': values_list
             }
         ]
         body = {
             'valueInputOption': 'RAW',
             'data': data
         }
-        result = service.spreadsheets().values().batchUpdate(
-            spreadsheetId=gsheet_id, 
+        result = self.service.spreadsheets().values().batchUpdate(
+            spreadsheetId=spreadsheet_id, 
             body=body
         ).execute()
         print('{0} cells updated.'.format(result.get('totalUpdatedCells')))
 
+    def clear_values(self, spreadsheet_id, range_name):
+        gsheet_response = self.service.spreadsheets().values().clear(
+            spreadsheetId=spreadsheet_id, 
+            range=range_name 
+        ).execute()
+        return gsheet_response
 
     def get_gsheet_response(self, spreadsheet_id, range_name):
         # Call the Sheets API

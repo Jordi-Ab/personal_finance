@@ -1,9 +1,44 @@
 import pandas as pd
+import numpy as np
 import datetime
 from datetime import date
 import os
 import pickle
 from math import ceil
+
+def retrieveDataFromSheet(gsheet_obj, gsheet_id):
+    cur_data = gsheet_obj.gsheet_to_df(
+        spreadsheet_id = gsheet_id,
+        range_name = 'data'
+    )
+    return cur_data
+
+def dataFrameToListOfValues(data_frame):
+    """
+    Converts a Data Frame a two dimensional list of values.
+    Supposes the Data Frame contains just one column,
+    and indices are not saved on the list.
+    """
+
+    # transform the column to list
+    cols = np.array(data_frame.columns)
+    cols_values = cols.tolist()
+
+    # values of Data Frame to list
+    values_arr = data_frame.values
+    # append the columns list as the first value of the array
+    list_of_rows = np.insert(values_arr, 0, cols_values, 0)
+
+    return list_of_rows.tolist()
+
+def numberToLetters(q):
+    q = q - 1
+    result = ''
+    while q >= 0:
+        remain = q % 26
+        result = chr(remain+65) + result
+        q = q//26 - 1
+    return result
 
 def last_day_of_month(any_day):
     next_month = any_day.replace(day=28) + datetime.timedelta(days=4)
@@ -44,11 +79,14 @@ def getCategoriesFromGSheet(gsheet_class, gsheet_id):
         cats[i] =  cat.iloc[0]
         sc = {}
         for j, c in enumerate(cat.iloc[1:]):
-            
             sc[j+1] = c
         sub_cats[cat.iloc[0]] = sc
     cat = categories_titles.loc[separations[-1]+1:, 'Variable Expenses']
     cats[len(separations)] =  cat.iloc[0]
+    sc = {}
+    for j, c in enumerate(cat.iloc[1:]):
+        sc[j+1] = c
+    sub_cats[cat.iloc[0]] = sc
 
     return cats, sub_cats
 
@@ -174,7 +212,7 @@ def categoriesTemplate(sub_cats):
     cols = ['Category', 'Sub Category']
     for key,value in sub_cats.items():
         vals = list(value.values())
-        df = hlp.crossJoin([[key],vals], cols)
+        df = crossJoin([[key],vals], cols)
         data_frames.append(df)
     template = pd.concat(data_frames, ignore_index = True)
     template.sort_values(
@@ -243,39 +281,39 @@ Enter the number of the method: """)
         elif (method_num == 'q'): 
             raise RuntimeError('Quit')
         else:
-            #try:
-            method_num = int(method_num)
-            if method_num < 0 or method_num > len(ccs) + 1:
+            try:
+                method_num = int(method_num)
+                if method_num < 0 or method_num > len(ccs) + 1:
+                    print("Sorry, not available")
+                elif method_num < len(ccs):
+                    # credit
+                    cc = ccs[method_num]
+                    print(cc.alias_name+'\n')
+                    an_expense.setPaymentMethod('credit')
+                    an_expense.setPaymentMethodName(cc.alias_name)
+                    # Payment date becomes the cut date of the credit card
+                    cc_cut_date = cc.cut_date
+                    expense_date = an_expense.getDate()
+                    pay_date = get_next_pay_date(expense_date, cc_cut_date)
+                    an_expense.setPaymentDate(
+                        pay_date.year, 
+                        pay_date.month, 
+                        pay_date.day
+                    )
+                    break
+                else:
+                    # debit or cash
+                    pm = 'debit' if method_num == len(ccs) else 'cash'
+                    print(pm+'\n')
+                    an_expense.setPaymentMethod(pm)
+                    an_expense.setPaymentMethodName(pm)
+                    # Payment date becomes the date when the expense was made
+                    pay_date = an_expense.getDate()
+                    an_expense.setPaymentDate(
+                        pay_date.year, 
+                        pay_date.month, 
+                        pay_date.day
+                    )
+                    break
+            except ValueError:
                 print("Sorry, not available")
-            elif method_num < len(ccs):
-                # credit
-                cc = ccs[method_num]
-                print(cc.alias_name+'\n')
-                an_expense.setPaymentMethod('credit')
-                an_expense.setPaymentMethodName(cc.alias_name)
-                # Payment date becomes the cut date of the credit card
-                cc_cut_date = cc.cut_date
-                expense_date = an_expense.getDate()
-                pay_date = get_next_pay_date(expense_date, cc_cut_date)
-                an_expense.setPaymentDate(
-                    pay_date.year, 
-                    pay_date.month, 
-                    pay_date.day
-                )
-                break
-            else:
-                # debit or cash
-                pm = 'debit' if method_num == len(ccs) else 'cash'
-                print(pm+'\n')
-                an_expense.setPaymentMethod(pm)
-                an_expense.setPaymentMethodName(pm)
-                # Payment date becomes the date when the expense was made
-                pay_date = an_expense.getDate()
-                an_expense.setPaymentDate(
-                    pay_date.year, 
-                    pay_date.month, 
-                    pay_date.day
-                )
-                break
-            #except ValueError:
-            #    print("Sorry, not available")
