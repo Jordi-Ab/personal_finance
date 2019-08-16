@@ -6,294 +6,15 @@ from math import ceil
 import os
 from gsheets_connect import GoogleSheets
 
+GSHEET_ID = '14a36tesQZ2AH0aIEdG5Ch2F8iVyrnXCvlxeASLX47N4'
+
 # Valid Categories is a dictionary that maps numbers to Categories.
 # Categories is a subdictionary inside valid categories, that maps
 # numbers to the subcategory name.
-MAIN_CATS = {
-    1: "Food", 
-    2: "Getting Around", 
-    3: "Fun Stuff", 
-    4: "Health Care", 
-    5: "Personal Stuff", 
-    6: "Apartment Spends",
-    7: "Removed from Savings"
-}
-
-SUB_CATS = {
-    "Food":{
-        1: "Super Market",
-        2: "Restaurants",
-        3: "Take-out and bingeing",
-        4: "Coffe",
-        5: "Other"
-    }, 
-    "Getting Around":{
-        1:"Gas",
-        2:"Parking",
-        3:"Other"
-    },
-    "Fun Stuff":{
-        1: "Socializing and Bars",
-        2: "Hobbies",
-        3: "Books",
-        4: "Other"
-    },
-    "Health Care":{
-        1: "Medicine",
-        2: "Vitamins",
-        3: "Supplements",
-        4: "Other"
-    },
-    "Personal Stuff":{
-        1: "Clothing",
-        2: "Haircut",
-        3: "Gifts",
-        4: "Personal Care",
-        5: "Stuff for me",
-        6: "Other"
-    },
-    "Apartment Spends":{
-        1: "Services",
-        2: "Stuff for the Apartment",
-        3: "Other"
-    },
-    "Removed from Savings":{
-        1: "Trips",
-        2: "Other"
-    }
-}
 
 working_directory = os.getcwd()
 
-def askYesOrNo(message):
-    while (True):
-        answer = input(message)
-        if (answer[0].lower() == 'y'): return True
-        elif (answer[0].lower() == 'n'): return False
-        else: print("Invalid Yes or No answer, try again.")
-
-def getYear(message):
-    while(True):
-        inpt = input(message)
-        if (inpt == 'r'): raise Exception('restart')
-        elif (inpt == 'q'): raise RuntimeError('Quit')
-        elif (not inpt.isdigit() or int(inpt) < 2000): 
-            print ("Invalid value for Year, enter a valid year.")
-        elif (int(inpt)>date.today().year):
-            print ("Can't log spends for future dates, enter a valid year.")
-        else:
-            return int(inpt)
-
-def getMonth(message):
-    while(True):
-        inpt = input(message)
-        if (inpt == 'r'): raise Exception('restart')
-        elif (inpt == 'q'): raise RuntimeError('Quit')
-        elif (not inpt.isdigit() or int(inpt)==0 or int(inpt) > 12): 
-            print ("Invalid value for month, enter a valid month.")
-        else:
-            return int(inpt)
-
-def getDay(message):
-    while(True):
-        inpt = input(message)
-        if (inpt == 'r'): raise Exception('restart')
-        elif (inpt == 'q'): raise RuntimeError('Quit')
-        elif (not inpt.isdigit() or int(inpt)==0 or int(inpt) > 31): 
-            print ("Invalid value for day, enter a valid day.")
-        else:
-            return int(inpt)
-
-def askUserForDate(an_expense):
-    flag = askYesOrNo("Was it today? [yes/no]: ")
-    print(" ")
-    if (not flag): # If expense wasn't made today.
-        print("Enter date when the expense was made: ")
-        while(True):
-            year = getYear("Year: ")
-            month = getMonth("Month: ")
-            day = getDay("Day: ")
-
-            input_date = date(year, month, day)
-
-            if(input_date>date.today()): print ("Can't log spends for future dates, enter a valid date.")
-            else:
-                an_expense.setDate(year,month,day)
-                break
-
-def printCategories(dictionary, flag):
-    """
-    Receives a dictionary, and prints its key followed by its value.
-    """
-    m = 'Sub ' if flag else ''
-    message = "Select one "+m+ "Category from the below list:"
-
-    print(message)
-    for key, value in dictionary.items() :
-        print (str(key)+". ", value)
-
-def askUserForCategoryNumber(dictionary, flag):
-    printCategories(dictionary, flag)
-    
-    m = 'Sub ' if flag else ''
-    message = "Enter number of the "+m+ "Category: "
-    
-    while(True):
-        selection = input(message)
-        if (selection == 'r'): raise Exception('restart')
-        elif (selection == 'q'): raise RuntimeError('Quit')
-        try: selection = int(selection) # Try converting the input to integer.
-        except ValueError: print("That's not a number") # If user didn't entered an integer
-        if (selection in dictionary.keys()): return selection # Sucessfull category selection.
-        else: print("Error: Selection not in the valid list.") # Inputed a number not in the list of valid categories.
-        print(" ")
-
-def selectCategory(an_expense):
-    #Main Category
-    flag = False # Flag = False means that the message will be prompted for main categories
-    cat_key = askUserForCategoryNumber(MAIN_CATS, flag)
-    cat_name = MAIN_CATS[cat_key]
-    an_expense.setMainCategory(cat_name)
-    print(" ")
-    print("You chose: " + str(cat_key)+". "+cat_name)
-    print(" ")
- 
-    #Sub Category
-    flag = True # Flag = True means that the message will be prompted for sub categories
-    subcats_dict = SUB_CATS[cat_name]
-    subcat_key = askUserForCategoryNumber(subcats_dict, flag)
-    subcat_name = subcats_dict[subcat_key]
-    an_expense.setSubCategory(subcat_name)
-    print(" ")
-    print("You spent on "+cat_name+" -> "+subcat_name)
-    print(" ")    
-
-def askForAmount(an_expense):
-    while(True):
-        amount = input("Amount spent: ")
-        if (amount == 'r'): raise Exception('restart')
-        elif (amount == 'q'): raise RuntimeError('Quit')
-
-        try: 
-            amount = float(amount) # Try converting the input to float.
-            if (amount < 0): raise ValueError
-            break
-        except ValueError: # If user didn't entered a number,or entered a negative.
-            print("No negative numbers or invalid characters please. Try Again.") 
-    an_expense.setAmount(amount)
-    
-def categoriesTemplate():
-    data_frames = []
-    cols = ['Category', 'Sub Category']
-    for key,value in SUB_CATS.items():
-        vals = list(value.values())
-        df = hlp.crossJoin([[key],vals], cols)
-        data_frames.append(df)
-    template = pd.concat(data_frames, ignore_index = True)
-    template.sort_values(
-        by=['Category', 'Sub Category'], 
-        inplace = True
-    )
-    return template
-
-def load_credit_cards():
-    credit_cards = []
-    for file in os.listdir('credit_cards'):
-        if file.endswith('pkl'):
-            with open('credit_cards/'+file, 'rb') as handle:
-                cc = pickle.load(handle)
-                credit_cards.append(cc)
-    return credit_cards
-
-def list_payment_methods(credit_cards_list):
-    ccs_str = ""
-    for i, cc in enumerate(credit_cards_list):
-        ccs_str += '\n'+str(i)+') '+cc.alias_name
-    ccs_str += '\n'+str(len(credit_cards_list))+') debit'
-    ccs_str += '\n'+str(len(credit_cards_list)+1)+') cash'
-    return ccs_str
-
-def get_next_pay_date(payment_date, cut_day):
-    next_pay_day = min(ceil(cut_day/15)*15, 31)
-    next_pay_date = date(
-        day=next_pay_day, 
-        month=payment_date.month,
-        year=payment_date.year
-    )
-    if payment_date.day >= cut_day:
-        next_pay_date = next_pay_date + pd.DateOffset(months=1)
-    return next_pay_date
-
-def askForInstallments(an_expense):
-    while(True):
-        if an_expense.getPaymentMethod() == 'credit':
-            # Change number of installments when credit card
-            inst = input("How many installments? ")
-            try:
-                inst = int(inst)
-                if inst > 0 and inst%3==0:
-                    an_expense.setInstallments(inst)
-                    print("Cool, {0} MSI \n".format(inst))
-                    break
-                else:
-                    print("Sorry, not available")
-            except ValueError:
-                print("Sorry, not available")
-        else:
-            # Debit or Cash, default installments are 1
-            break
-
-def askForPaymentMethod(an_expense):
-    while(True):
-        ccs = load_credit_cards()
-        ccs_str = list_payment_methods(ccs)
-        method_num = input("""
-Which payment method was used? """+ccs_str+"""
-
-Enter the number of the method: """)
-        if (method_num == 'r'): 
-            raise Exception('restart')
-        elif (method_num == 'q'): 
-            raise RuntimeError('Quit')
-        else:
-            #try:
-            method_num = int(method_num)
-            if method_num < 0 or method_num > len(ccs) + 1:
-                print("Sorry, not available")
-            elif method_num < len(ccs):
-                # credit
-                cc = ccs[method_num]
-                print(cc.alias_name+'\n')
-                an_expense.setPaymentMethod('credit')
-                an_expense.setPaymentMethodName(cc.alias_name)
-                # Payment date becomes the cut date of the credit card
-                cc_cut_date = cc.cut_date
-                expense_date = an_expense.getDate()
-                pay_date = get_next_pay_date(expense_date, cc_cut_date)
-                an_expense.setPaymentDate(
-                    pay_date.year, 
-                    pay_date.month, 
-                    pay_date.day
-                )
-                break
-            else:
-                # debit or cash
-                pm = 'debit' if method_num == len(ccs) else 'cash'
-                print(pm+'\n')
-                an_expense.setPaymentMethod(pm)
-                an_expense.setPaymentMethodName(pm)
-                # Payment date becomes the date when the expense was made
-                pay_date = an_expense.getDate()
-                an_expense.setPaymentDate(
-                    pay_date.year, 
-                    pay_date.month, 
-                    pay_date.day
-                )
-                break
-            #except ValueError:
-            #    print("Sorry, not available")
-
-def modifyInfo(new_expense):
+def modifyInfo(new_expense, main_cats, sub_cats):
     print("""
     Registering a new expense. At any time:
         * r is for restart, and it restarts 
@@ -301,11 +22,11 @@ def modifyInfo(new_expense):
         * q kills the entire process.
     """)
     #try:
-    askUserForDate(new_expense) # Modifies the date of the expense object
-    selectCategory(new_expense)
-    askForPaymentMethod(new_expense)
-    askForInstallments(new_expense)
-    askForAmount(new_expense)
+    hlp.askUserForDate(new_expense) # Modifies the date of the expense object
+    hlp.selectCategory(new_expense, main_cats, sub_cats)
+    hlp.askForPaymentMethod(new_expense)
+    hlp.askForInstallments(new_expense)
+    hlp.askForAmount(new_expense)
     #except RuntimeError:
     #    print('Quit')
     #    quit()
@@ -317,11 +38,13 @@ def modifyInfo(new_expense):
 from expense import Expense
 
 new_expenses = []
+gsheet = GoogleSheets()
+main_cats, sub_cats = hlp.getCategoriesFromGSheet(gsheet, GSHEET_ID)
 
 # ASK USER FOR THE INFO ABOUT THE EXPENSE.
 while(True):    
     new_expense = Expense()
-    modifyInfo(new_expense)
+    modifyInfo(new_expense, main_cats, sub_cats)
     print(new_expense.getInstallments())
     #if new_expense.getInstallments() > 1:
     # MSI, so divide the Expense in multiple expenses
@@ -331,7 +54,7 @@ while(True):
     new_expenses = new_expenses + sub_expenses
     print("I have just registered this expense:")
     print(new_expense.toString())
-    flag = askYesOrNo("Log another expense? ")
+    flag = hlp.askYesOrNo("Log another expense? ")
     if(not flag): break
 
 # SAVE THE EXPENSES ON "DATABASE"
