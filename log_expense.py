@@ -174,6 +174,10 @@ if __name__ == "__main__":
         range_name='data'
     )
 
+    print(" ")
+    print("Expenses were succesfully uploaded to Google Doc.")
+
+    """
     # Pivot the data and write on Google Sheets
     cats_template = hlp.categoriesTemplate(sub_cats).sort_index()
     cats_template['range'] = np.arange(1, cats_template.shape[0]+1)
@@ -203,6 +207,5 @@ if __name__ == "__main__":
         values_list=monthly_values, 
         range_name='monthly data!B2'
     )
-
-    print(" ")
-    print("Expenses were succesfully uploaded to Google Doc.")
+    """
+    
