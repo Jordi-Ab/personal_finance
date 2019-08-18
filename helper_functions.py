@@ -256,6 +256,9 @@ def askForInstallments(an_expense):
             inst = input("How many installments? ")
             try:
                 inst = int(inst)
+                if inst == 0 or inst == 1:
+                    an_expense.setInstallments(1)
+                    break
                 if inst > 0 and inst%3==0:
                     an_expense.setInstallments(inst)
                     print("Cool, {0} MSI \n".format(inst))

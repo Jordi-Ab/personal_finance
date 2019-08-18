@@ -10,16 +10,16 @@ from expense import Expense
 GSHEET_ID = '14a36tesQZ2AH0aIEdG5Ch2F8iVyrnXCvlxeASLX47N4'
 working_directory = os.getcwd()
 
-def pivotData(data_frame, categories_template, how='bimonthly'):
-
+def pivotData(data_frame, how='bimonthly'):
+    
+    date_ix = 'Payment '+('Fortnight' if how =='bimonthly' else 'Month')
     pivot = pd.pivot_table(
         data_frame, 
         values = 'Amount $',
-        columns='Payment '+('Fortnight' if how =='bimonthly' else 'Month'),
         aggfunc='sum',
-        index=['Category', 'Sub Category']
+        index=[date_ix, 'Category', 'Sub Category']
     ).reset_index()
-
+    """
     data_with_all_cats = pd.merge(
         categories_template, 
         pivot, 
@@ -49,6 +49,8 @@ def pivotData(data_frame, categories_template, how='bimonthly'):
         ]
     ]
     return pivoted_to_write_on_gsheet
+    """
+    return pivot
 
 
 def modifyInfo(new_expense, main_cats, sub_cats):
@@ -174,38 +176,36 @@ if __name__ == "__main__":
         range_name='data'
     )
 
-    print(" ")
-    print("Expenses were succesfully uploaded to Google Doc.")
-
-    """
     # Pivot the data and write on Google Sheets
-    cats_template = hlp.categoriesTemplate(sub_cats).sort_index()
-    cats_template['range'] = np.arange(1, cats_template.shape[0]+1)
+    #cats_template = hlp.categoriesTemplate(sub_cats).sort_index()
+    #cats_template['range'] = np.arange(1, cats_template.shape[0]+1)
 
     # Pivot bimonthly (every 15 days)
-    bimonthly_pivot = pivotData(updated_data, cats_template, how='bimonthly')
+    bimonthly_pivot = pivotData(updated_data, how='bimonthly')
     bimonthly_values = hlp.dataFrameToListOfValues(bimonthly_pivot)
     gsheet.clear_values(
         spreadsheet_id = GSHEET_ID,
-        range_name = 'bimonthly data!B2'
+        range_name = 'bimonthly pivot!A1'
     )
     gsheet.values_to_gsheet(
         spreadsheet_id = GSHEET_ID,
         values_list=bimonthly_values, 
-        range_name='bimonthly data!B2'
+        range_name='bimonthly pivot!A1'
     )
 
     # Pivot monthly
-    monthly_pivot = pivotData(updated_data, cats_template, how='monthly')
+    monthly_pivot = pivotData(updated_data, how='monthly')
     monthly_values = hlp.dataFrameToListOfValues(monthly_pivot)
     gsheet.clear_values(
         spreadsheet_id = GSHEET_ID,
-        range_name = 'monthly data!B2'
+        range_name = 'monthly pivot!A1'
     )
     gsheet.values_to_gsheet(
         spreadsheet_id = GSHEET_ID,
         values_list=monthly_values, 
-        range_name='monthly data!B2'
+        range_name='monthly pivot!A1'
     )
-    """
+
+    print(" ")
+    print("Expenses were succesfully uploaded to Google Doc.")
     
