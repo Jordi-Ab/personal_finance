@@ -70,7 +70,7 @@ def modifyInfo(new_expense, main_cats, sub_cats):
         print('Quit')
         quit()
     except Exception:
-        modifyInfo(new_expense)
+        modifyInfo(new_expense, main_cats, sub_cats)
 
 # ---- Main Program ----------------------------------- 
 if __name__ == "__main__":
@@ -84,11 +84,9 @@ if __name__ == "__main__":
         new_expense = Expense()
         modifyInfo(new_expense, main_cats, sub_cats)
         print(new_expense.getInstallments())
-        #if new_expense.getInstallments() > 1:
         # MSI, so divide the Expense in multiple expenses
         sub_expenses = new_expense.divideExpense()
         print([se.getAmount() for se in sub_expenses])
-        #else:
         new_expenses = new_expenses + sub_expenses
         print("I have just registered this expense:")
         print(new_expense.toString())
