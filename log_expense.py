@@ -1,199 +1,59 @@
 from datetime import date
 import helper_functions as hlp
 import pandas as pd
+import numpy as np 
 import os
+from gsheets_connect import GoogleSheets
+from expense import Expense
 
-# Valid Categories is a dictionary that maps numbers to Categories.
-# Categories is a subdictionary inside valid categories, that maps
-# numbers to the subcategory name.
-MAIN_CATS = {
-        1: "Food", 
-        2: "Getting Around", 
-        3: "Fun Stuff", 
-    4: "Health Care", 
-    5: "Personal Stuff", 
-    6: "Apartment Spends",
-    7: "Removed from Savings"
-}
-
-SUB_CATS = {
-        "Food":{
-            1: "Super Market",
-            2: "Restaurants",
-            3: "Take-out and bingeing",
-            4: "Coffe",
-            5: "Other"
-    }, 
-        "Getting Around":{
-            1:"Gas",
-            2:"Parking",
-            3:"Other"
-    },
-        "Fun Stuff":{
-            1: "Socializing and Bars",
-            2: "Hobbies",
-            3: "Books",
-            4: "Other"
-    },
-        "Health Care":{
-            1: "Medicine",
-            2: "Vitamins",
-            3: "Supplements",
-            4: "Other"
-    },
-        "Personal Stuff":{
-            1: "Clothing",
-            2: "Haircut",
-            3: "Gifts",
-            4: "Personal Care",
-            5: "Stuff for me",
-            6: "Other"
-    },
-    "Apartment Spends":{
-                1: "Services",
-                2: "Stuff for the Apartment",
-                3: "Other"
-    },
-        "Removed from Savings":{
-            1: "Trips",
-            2: "Other"
-    }
-}
-
+# Global Variables
+GSHEET_ID = '14a36tesQZ2AH0aIEdG5Ch2F8iVyrnXCvlxeASLX47N4'
 working_directory = os.getcwd()
 
-def askYesOrNo(message):
-    while (True):
-        answer = input(message)
-        if (answer[0].lower() == 'y'): return True
-        elif (answer[0].lower() == 'n'): return False
-        else: print("Invalid Yes or No answer, try again.")
-
-def getYear(message):
-    while(True):
-        inpt = input(message)
-        if (inpt == 'r'): raise Exception('restart')
-        elif (inpt == 'q'): raise RuntimeError('Quit')
-        elif (not inpt.isdigit() or int(inpt) < 2000): 
-            print ("Invalid value for Year, enter a valid year.")
-        elif (int(inpt)>date.today().year):
-            print ("Can't log spends for future dates, enter a valid year.")
-        else:
-            return int(inpt)
-
-def getMonth(message):
-    while(True):
-        inpt = input(message)
-        if (inpt == 'r'): raise Exception('restart')
-        elif (inpt == 'q'): raise RuntimeError('Quit')
-        elif (not inpt.isdigit() or int(inpt)==0 or int(inpt) > 12): 
-            print ("Invalid value for month, enter a valid month.")
-        else:
-            return int(inpt)
-
-def getDay(message):
-    while(True):
-        inpt = input(message)
-        if (inpt == 'r'): raise Exception('restart')
-        elif (inpt == 'q'): raise RuntimeError('Quit')
-        elif (not inpt.isdigit() or int(inpt)==0 or int(inpt) > 31): 
-            print ("Invalid value for day, enter a valid day.")
-        else:
-            return int(inpt)
-
-def askUserForDate(an_expense):
-    flag = askYesOrNo("Was it today? [yes/no]: ")
-    print(" ")
-    if (not flag): # If expense wasn't made today.
-        print("Enter date when the expense was made: ")
-        while(True):
-            year = getYear("Year: ")
-            month = getMonth("Month: ")
-            day = getDay("Day: ")
-
-            input_date = date(year, month, day)
-
-            if(input_date>date.today()): print ("Can't log spends for future dates, enter a valid date.")
-            else:
-                an_expense.setDate(year,month,day)
-                break
-
-def printCategories(dictionary, flag):
+def pivotData(data_frame, how='bimonthly'):
+    
+    date_ix = 'Payment '+('Fortnight' if how =='bimonthly' else 'Month')
+    pivot = pd.pivot_table(
+        data_frame, 
+        values = 'Amount $',
+        aggfunc='sum',
+        index=[date_ix, 'Category', 'Sub Category']
+    ).reset_index()
     """
-    Receives a dictionary, and prints its key followed by its value.
+    data_with_all_cats = pd.merge(
+        categories_template, 
+        pivot, 
+        on = ['Category', 'Sub Category'], 
+        how='left'
+    ).fillna(0)
+
+    pivoted_to_write_on_gsheet = pd.DataFrame(
+        data_with_all_cats.set_index(
+            ['Category', 'Sub Category', 'range']
+        ).stack()
+    ).reset_index().rename(
+        columns={
+            'level_3': 'Payment '+('Fortnight' if how =='bimonthly' else 'Month'), 
+            0: 'Amount $'
+        }
+    )
+
+    pivoted_to_write_on_gsheet = pivoted_to_write_on_gsheet.loc[
+        :,
+        [
+            'range', 
+            'Category', 
+            'Sub Category', 
+            'Payment '+('Fortnight' if how =='bimonthly' else 'Month'), 
+            'Amount $'
+        ]
+    ]
+    return pivoted_to_write_on_gsheet
     """
-    m = 'Sub ' if flag else ''
-    message = "Select one "+m+ "Category from the below list:"
+    return pivot
 
-    print(message)
-    for key, value in dictionary.items() :
-        print (str(key)+". ", value)
 
-def askUserForCategoryNumber(dictionary, flag):
-    printCategories(dictionary, flag)
-    
-    m = 'Sub ' if flag else ''
-    message = "Enter number of the "+m+ "Category: "
-    
-    while(True):
-        selection = input(message)
-        if (selection == 'r'): raise Exception('restart')
-        elif (selection == 'q'): raise RuntimeError('Quit')
-        try: selection = int(selection) # Try converting the input to integer.
-        except ValueError: print("That's not a number") # If user didn't entered an integer
-        if (selection in dictionary.keys()): return selection # Sucessfull category selection.
-        else: print("Error: Selection not in the valid list.") # Inputed a number not in the list of valid categories.
-        print(" ")
-
-def selectCategory(an_expense):
-    #Main Category
-    flag = False # Flag = False means that the message will be prompted for main categories
-    cat_key = askUserForCategoryNumber(MAIN_CATS, flag)
-    cat_name = MAIN_CATS[cat_key]
-    an_expense.setMainCategory(cat_name)
-    print(" ")
-    print("You chose: " + str(cat_key)+". "+cat_name)
-    print(" ")
- 
-    #Sub Category
-    flag = True # Flag = True means that the message will be prompted for sub categories
-    subcats_dict = SUB_CATS[cat_name]
-    subcat_key = askUserForCategoryNumber(subcats_dict, flag)
-    subcat_name = subcats_dict[subcat_key]
-    an_expense.setSubCategory(subcat_name)
-    print(" ")
-    print("You spent on "+cat_name+" -> "+subcat_name)
-    print(" ")    
-
-def askForAmount(an_expense):
-    while(True):
-        amount = input("Amount spent: ")
-        if (amount == 'r'): raise Exception('restart')
-        elif (amount == 'q'): raise RuntimeError('Quit')
-
-        try: 
-            amount = float(amount) # Try converting the input to float.
-            if (amount < 0): raise ValueError
-            break
-        except ValueError: # If user didn't entered a number,or entered a negative.
-            print("No negative numbers or invalid characters please. Try Again.") 
-    an_expense.setAmount(amount)
-    
-def categoriesTemplate():
-    data_frames = []
-    cols = ['Category', 'Sub Category']
-    for key,value in SUB_CATS.items():
-        vals = list(value.values())
-        df = hlp.crossJoin([[key],vals], cols)
-        data_frames.append(df)
-    template = pd.concat(data_frames, ignore_index = True)
-    template.sort_values(
-        by=['Category', 'Sub Category'], 
-        inplace = True
-        )
-    return template
-
-def modifyInfo(new_expense):
+def modifyInfo(new_expense, main_cats, sub_cats):
     print("""
     Registering a new expense. At any time:
         * r is for restart, and it restarts 
@@ -201,141 +61,149 @@ def modifyInfo(new_expense):
         * q kills the entire process.
     """)
     try:
-        askUserForDate(new_expense) # Modifies the date of the expense object
-        selectCategory(new_expense)
-        askForAmount(new_expense)
+        hlp.askUserForDate(new_expense) # Modifies the date of the expense object
+        hlp.selectCategory(new_expense, main_cats, sub_cats)
+        hlp.askForPaymentMethod(new_expense)
+        hlp.askForInstallments(new_expense)
+        hlp.askForAmount(new_expense)
     except RuntimeError:
         print('Quit')
         quit()
     except Exception:
-        modifyInfo(new_expense)
+        modifyInfo(new_expense, main_cats, sub_cats)
 
 # ---- Main Program ----------------------------------- 
-    
-from expense import Expense
+if __name__ == "__main__":
 
-new_expenses = []
+    new_expenses = []
+    gsheet = GoogleSheets()
+    main_cats, sub_cats = hlp.getCategoriesFromGSheet(gsheet, GSHEET_ID)
 
-# ASK USER FOR THE INFO ABOUT THE EXPENSE.
-while(True):
-    
-    new_expense = Expense()
-    modifyInfo(new_expense)
+    # ASK USER FOR THE INFO ABOUT THE EXPENSE.
+    while(True):    
+        new_expense = Expense()
+        modifyInfo(new_expense, main_cats, sub_cats)
+        print(new_expense.getInstallments())
+        # MSI, so divide the Expense in multiple expenses
+        sub_expenses = new_expense.divideExpense()
+        print([se.getAmount() for se in sub_expenses])
+        new_expenses = new_expenses + sub_expenses
+        print("I have just registered this expense:")
+        print(new_expense.toString())
+        flag = hlp.askYesOrNo("Log another expense? ")
+        print(" ")
+        if(not flag): break
 
-    new_expenses.append(new_expense)
-    print("I have just registered this expense:")
-    print(new_expense.toString())
-    flag = askYesOrNo("Log another expense? ")
-    if(not flag): break
+    # SAVE THE EXPENSES ON "DATABASE"
 
-# SAVE THE EXPENSES ON "DATABASE"
+    #Get Current Data from Google Sheet
+    cur_data = hlp.retrieveDataFromSheet(gsheet, GSHEET_ID)
+    # Parse data that should be numeric
+    cur_data['Amount $'] = cur_data['Amount $'].astype(float)
+    cur_data['Expense Month'] = cur_data['Expense Month'].astype(int)
+    cur_data['Payment Month'] = cur_data['Payment Month'].astype(int)
+    cur_data['Installments'] = cur_data['Installments'].astype(int)
 
-#Get Current Data from csv
-cur_data = pd.read_csv(r'daily_data.txt', sep=' ')
+    #Create a data frame with the new data per Day.
+    expense_dates = []
+    payment_dates = []
+    expense_months = []
+    payment_months = []
+    expenses_installments = []
+    expenses_methods = []
+    expenses_method_names = []
+    main_categories = []
+    sub_categories = []
+    amounts = []
+    payment_fortnights=[]
 
-#Create a data frame with the new data per Day.
-dates = []
-month_nums = []
-main_categories = []
-sub_categories = []
-amounts = []
+    for expense in new_expenses:
+        expense_dates.append(expense.getDateAsString())
+        payment_dates.append(expense.getPaymentDateAsString())
+        expense_months.append(expense.getMonthNum())
+        payment_months.append(expense.getPaymentMonthNum())
+        payment_fortnights.append(expense.getPaymentFortnight())
+        expenses_installments.append(expense.getInstallments())
+        expenses_methods.append(expense.getPaymentMethod())
+        expenses_method_names.append(expense.getPaymentMethodName())
+        main_categories.append(expense.getMainCategory())
+        sub_categories.append(expense.getSubCategory())
+        amounts.append(expense.getAmount())
 
-for expense in new_expenses:
-    dates.append(expense.getDateAsString())
-    month_nums.append(expense.getMonthNum())
-    main_categories.append(expense.getMainCategory())
-    sub_categories.append(expense.getSubCategory())
-    amounts.append(expense.getAmount())
+    data = {
+        "Expense Day":expense_dates, 
+        "Expense Month":expense_months, 
+        "Payment Day":payment_dates, 
+        "Payment Month":payment_months,
+        "Installments":expenses_installments, 
+        "Payment Method":expenses_methods,
+        "Method Name":expenses_method_names,
+        "Category":main_categories, 
+        "Sub Category":sub_categories,
+        "Amount $":amounts,
+        "Payment Fortnight":payment_fortnights
+    }
+    cols = [
+        "Amount $",
+        "Expense Day", 
+        "Expense Month", 
+        "Payment Day", 
+        "Payment Month", 
+        "Installments", 
+        "Payment Method",
+        "Method Name",
+        "Category", 
+        "Sub Category",
+        "Payment Fortnight"
+    ]
+    new_entry = pd.DataFrame(data, columns=cols)
 
-data = {
-        'Date':dates, 
-        'MonthNum':month_nums,
-    'Category':main_categories, 
-    'Sub Category':sub_categories,
-    'Amount $':amounts
-}
-cols = [
-        'Date', 
-        'MonthNum',
-        'Category', 
-        'Sub Category', 
-        'Amount $'
-]
-new_entry = pd.DataFrame(data, columns=cols)
-
-#Concatenate the current data with the new data.
-daily_data = pd.concat(
-        [cur_data, new_entry], 
-        ignore_index=True
-)
-daily_data.sort_values(by=['Date'], inplace=True)
-daily_data.index = range(len(daily_data))
-
-# Save the new data
-daily_data.to_csv(r'daily_data.txt', index=None, sep=' ')
-print(" ")
-print("Expenses were succesfully uploaded to Database.")
-
-# SYNC DATA WITH EXCEL
-excel = askYesOrNo("Sync with Excel?: ")
-if(excel):
-    import xlwings as xl
-    #Pivot to write it in Excel.
-    template = categoriesTemplate()
-    daily_data_pivot = pd.pivot_table(
-        daily_data, 
-        values = 'Amount $',
-        columns='Date',
-        aggfunc='sum',
-        index=['Category', 'Sub Category']
+    #Concatenate the current data with the new data.
+    updated_data = pd.concat(
+            [cur_data, new_entry], 
+            ignore_index=True
     )
-    daily_data_pivot.reset_index(inplace=True)
-    daily_data2 = pd.merge(
-        template, 
-        daily_data_pivot, 
-                on=['Category', 'Sub Category'], 
-                how='left'
-        )
-                                  
-    daily_data2.fillna(0, inplace=True)
-    
-    #Group Monthly
-    monthly_data = daily_data.drop('Date', 1)
-    monthly_data=monthly_data.groupby(
-        ['MonthNum','Category', 'Sub Category']
-        ).sum()
-    monthly_data.reset_index(inplace=True)
-    monthly_data_pivot = pd.pivot_table(
-        monthly_data, 
-                values = 'Amount $',
-        columns='MonthNum',
-        aggfunc='sum',
-        index=['Category', 'Sub Category']
+    updated_data.sort_values(by=['Expense Day'], inplace=True)
+    updated_data.index = range(len(updated_data))
+
+    # Save the new data
+    values_list = hlp.dataFrameToListOfValues(updated_data)
+    gsheet.values_to_gsheet(
+        spreadsheet_id = GSHEET_ID,
+        values_list=values_list, 
+        range_name='data'
     )
-    monthly_data_pivot.reset_index(inplace=True)
-    monthly_data2 = pd.merge(
-        template, 
-        monthly_data_pivot,
-        on=['Category', 'Sub Category'], 
-        how='left'
-        ) 
-    monthly_data2.fillna(0, inplace=True)
-    
-    #Write it in Excel.
-    db_path = os.path.join(
-        os.path.normpath(os.getcwd() + os.sep + os.pardir), # From current directory, one directory back
-        "Personal Finance.xlsm"
-        )
-    db_wb = xl.Book(db_path)
-    
-    d_sheet = db_wb.sheets['Daily Data']
-    m_sheet = db_wb.sheets['Monthly Data']
-    d_sheet.range('B2').value = daily_data2
-    m_sheet.range('B2').value = monthly_data2
-    
-    # Save and close the Workbook.
-    #db_wb.save(db_path)
-    close = askYesOrNo("Close Excel?: ")
-    if(close): db_wb.close()
 
+    # Pivot the data and write on Google Sheets
+    #cats_template = hlp.categoriesTemplate(sub_cats).sort_index()
+    #cats_template['range'] = np.arange(1, cats_template.shape[0]+1)
 
+    # Pivot bimonthly (every 15 days)
+    bimonthly_pivot = pivotData(updated_data, how='bimonthly')
+    bimonthly_values = hlp.dataFrameToListOfValues(bimonthly_pivot)
+    gsheet.clear_values(
+        spreadsheet_id = GSHEET_ID,
+        range_name = 'bimonthly pivot!A1'
+    )
+    gsheet.values_to_gsheet(
+        spreadsheet_id = GSHEET_ID,
+        values_list=bimonthly_values, 
+        range_name='bimonthly pivot!A1'
+    )
+
+    # Pivot monthly
+    monthly_pivot = pivotData(updated_data, how='monthly')
+    monthly_values = hlp.dataFrameToListOfValues(monthly_pivot)
+    gsheet.clear_values(
+        spreadsheet_id = GSHEET_ID,
+        range_name = 'monthly pivot!A1'
+    )
+    gsheet.values_to_gsheet(
+        spreadsheet_id = GSHEET_ID,
+        values_list=monthly_values, 
+        range_name='monthly pivot!A1'
+    )
+
+    print(" ")
+    print("Expenses were succesfully uploaded to Google Doc.")
+    
