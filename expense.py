@@ -1,5 +1,6 @@
 from datetime import date
 from pandas import DateOffset
+from helper_functions import last_day_of_month
 
 class Expense:
 
@@ -47,8 +48,9 @@ class Expense:
         return int(self._payment_date.strftime('%Y%m'))
 
     def getPaymentFortnight(self):
+        ldm = last_day_of_month(self._payment_date).day
         return self._payment_date.replace(
-            day=15 if self._payment_date.day <= 15 else 30
+            day=15 if self._payment_date.day <= 15 else ldm
         ).strftime('%Y-%m-%d')
 
     def getInstallments(self):
