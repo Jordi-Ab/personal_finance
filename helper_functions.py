@@ -63,7 +63,7 @@ def crossJoin(series, columns):
 def getCategoriesFromGSheet(gsheet_class, gsheet_id):
     categories_titles = gsheet_class.gsheet_to_df(
         spreadsheet_id = gsheet_id,
-        range_name = 'biweekly plan!B27:D100'
+        range_name = 'biweekly plan!B29:D100'
     )
 
     separations = categories_titles[
