@@ -6,10 +6,10 @@ import os
 import pickle
 from math import ceil
 
-def retrieveDataFromSheet(gsheet_obj, gsheet_id):
+def retrieveDataFromSheet(gsheet_obj, gsheet_id, sheet_name = 'data'):
     cur_data = gsheet_obj.gsheet_to_df(
         spreadsheet_id = gsheet_id,
-        range_name = 'data'
+        range_name = sheet_name
     )
     return cur_data
 
