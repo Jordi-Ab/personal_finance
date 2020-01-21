@@ -1,6 +1,6 @@
 from datetime import date
 from pandas import DateOffset
-from helper_functions import last_day_of_month
+from helper_functions import last_day_of_month, get_next_pay_date
 
 class Expense:
 
@@ -8,11 +8,15 @@ class Expense:
         self._date = date.today() # Initializes with todays date.
         self._main_category = ''
         self._sub_category = ''
+        self._description = ''
         self._amount = 0
         self._payment_method = ''
         self._payment_method_name = ''
         self._payment_date = date.today() # Date when the expense should be paid (next month for credit cards)
         self._n_installments = 1 # Number of payments (in the case of MSI)
+
+    def getDescription(self):
+        return self._description
 
     def getDate(self):
         return self._date
@@ -56,6 +60,9 @@ class Expense:
     def getInstallments(self):
         return self._n_installments
 
+    def setDescription(self, description):
+        self._description = description
+
     def setDate(self, year, month, day):
         self._date = date(year, month, day)
 
@@ -81,6 +88,39 @@ class Expense:
 
     def setInstallments(self, n_installments):
         self._n_installments = n_installments
+
+    def updateData(
+        self, 
+        payment_date, 
+        description, 
+        category, 
+        sub_category, 
+        amount, 
+        payment_method, 
+        n_installments,
+        credit_card_used=None
+    ):
+        self.setDate(payment_date.year, payment_date.month, payment_date.day)
+        self.setDescription(description)
+        self.setMainCategory(category)
+        self.setSubCategory(sub_category)
+        self.setAmount(amount)
+        self.setInstallments(n_installments)
+        if credit_card_used:
+            self.setPaymentMethod('credit')
+            self.setPaymentMethodName(credit_card_used.alias_name)
+            # Payment date becomes the cut date of the credit card
+            cc_cut_date = credit_card_used.cut_date
+            expense_date = self.getDate()
+            pay_date = get_next_pay_date(expense_date, cc_cut_date)
+            self.setPaymentDate(pay_date.year, pay_date.month, pay_date.day)
+        else:
+            # debit or cash
+            an_expense.setPaymentMethod(payment_method)
+            an_expense.setPaymentMethodName(payment_method)
+            # Payment date becomes the date when the expense was made
+            pay_date = self.getDate()
+            an_expense.setPaymentDate(pay_date.year, pay_date.month, pay_date.day)
 
     def divideExpense(self):
         """

@@ -164,6 +164,7 @@ def askUserForCategoryNumber(dictionary, flag):
     message = "Enter number of the "+m+ "Category: "
     
     while(True):
+        print('')
         selection = input(message)
         if (selection == 'r'): raise Exception('restart')
         elif (selection == 'q'): raise RuntimeError('Quit')
@@ -173,25 +174,19 @@ def askUserForCategoryNumber(dictionary, flag):
         else: print("Error: Selection not in the valid list.") # Inputed a number not in the list of valid categories.
         print(" ")
 
-def selectCategory(an_expense, main_cats, sub_cats):
+def selectCategory(main_cats, sub_cats):
     #Main Category
     flag = False # Flag = False means that the message will be prompted for main categories
     cat_key = askUserForCategoryNumber(main_cats, flag)
     cat_name = main_cats[cat_key]
-    an_expense.setMainCategory(cat_name)
-    print(" ")
-    print("You chose: " + str(cat_key)+". "+cat_name)
-    print(" ")
  
     #Sub Category
     flag = True # Flag = True means that the message will be prompted for sub categories
     subcats_dict = sub_cats[cat_name]
     subcat_key = askUserForCategoryNumber(subcats_dict, flag)
     subcat_name = subcats_dict[subcat_key]
-    an_expense.setSubCategory(subcat_name)
-    print(" ")
-    print("You spent on "+cat_name+" -> "+subcat_name)
-    print(" ")    
+    
+    return cat_name, subcat_name
 
 def askForAmount(an_expense):
     while(True):
@@ -249,29 +244,28 @@ def get_next_pay_date(payment_date, cut_day):
         next_pay_date = next_pay_date + pd.DateOffset(months=1)
     return next_pay_date
 
-def askForInstallments(an_expense):
+def askForInstallments(is_credit):
     while(True):
-        if an_expense.getPaymentMethod() == 'credit':
+        if is_credit:
             # Change number of installments when credit card
+            print('')
             inst = input("How many installments? ")
             try:
                 inst = int(inst)
                 if inst == 0 or inst == 1:
-                    an_expense.setInstallments(1)
-                    break
+                    return 1
                 if inst > 0 and inst%3==0:
-                    an_expense.setInstallments(inst)
                     print("Cool, {0} MSI \n".format(inst))
-                    break
+                    return inst
                 else:
                     print("Sorry, not available")
             except ValueError:
                 print("Sorry, not available")
         else:
             # Debit or Cash, default installments are 1
-            break
+            return 1
 
-def askForPaymentMethod(an_expense):
+def askForPaymentMethod():
     while(True):
         ccs = load_credit_cards()
         ccs_str = list_payment_methods(ccs)
@@ -292,31 +286,10 @@ Enter the number of the method: """)
                     # credit
                     cc = ccs[method_num]
                     print(cc.alias_name+'\n')
-                    an_expense.setPaymentMethod('credit')
-                    an_expense.setPaymentMethodName(cc.alias_name)
-                    # Payment date becomes the cut date of the credit card
-                    cc_cut_date = cc.cut_date
-                    expense_date = an_expense.getDate()
-                    pay_date = get_next_pay_date(expense_date, cc_cut_date)
-                    an_expense.setPaymentDate(
-                        pay_date.year, 
-                        pay_date.month, 
-                        pay_date.day
-                    )
-                    break
+                    return cc
                 else:
-                    # debit or cash
+                    # debit or cash:
                     pm = 'debit' if method_num == len(ccs) else 'cash'
-                    print(pm+'\n')
-                    an_expense.setPaymentMethod(pm)
-                    an_expense.setPaymentMethodName(pm)
-                    # Payment date becomes the date when the expense was made
-                    pay_date = an_expense.getDate()
-                    an_expense.setPaymentDate(
-                        pay_date.year, 
-                        pay_date.month, 
-                        pay_date.day
-                    )
-                    break
+                    return pm
             except ValueError:
                 print("Sorry, not available")
