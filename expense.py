@@ -4,7 +4,8 @@ from helper_functions import last_day_of_month, get_next_pay_date
 
 class Expense:
 
-    def __init__(self):
+    def __init__(self, this_id):
+        self._id = this_id
         self._date = date.today() # Initializes with todays date.
         self._main_category = ''
         self._sub_category = ''
@@ -14,6 +15,9 @@ class Expense:
         self._payment_method_name = ''
         self._payment_date = date.today() # Date when the expense should be paid (next month for credit cards)
         self._n_installments = 1 # Number of payments (in the case of MSI)
+
+    def getId(self):
+        return self._id
 
     def getDescription(self):
         return self._description
@@ -129,7 +133,7 @@ class Expense:
         installments = self.getInstallments()
         expenses = []
         for i in range(installments):
-            new_exp = Expense()
+            new_exp = Expense(this_id = self.getId())
             new_exp.setDate(
                 year=self.getDate().year, 
                 month=self.getDate().month, 
@@ -146,18 +150,22 @@ class Expense:
                 month=payment_date.month,
                 day=payment_date.day
             )
+            new_exp.setDescription(
+                self.getDescription()+(' {0} of {1} MSI'.format(i+1, installments) if installments>1 else '')
+            )
             expenses.append(new_exp)
 
         return expenses
 
     def toString(self):
         string = """Expense:
-    Date: """ +self.getDateAsString()+ """
-    Category: """+self._main_category+"""
-    Sub Category: """+self._sub_category+"""
+    Id:             """+str(self.getId())+"""
+    Date:           """ +self.getDateAsString()+ """
+    Category:       """+self._main_category+"""
+    Sub Category:   """+self._sub_category+"""
     Payment Method: """+self._payment_method+"""
-    Installments: """+str(self._n_installments)+"""
-    Amount: $"""+str(self._amount)
+    Installments:   """+str(self._n_installments)+"""
+    Amount:        $"""+str(self._amount)
         return string
 
 
