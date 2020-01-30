@@ -270,7 +270,7 @@ def askForPaymentMethod():
         ccs = load_credit_cards()
         ccs_str = list_payment_methods(ccs)
         method_num = input("""
-Which payment method was used? """+ccs_str+"""
+Which payment method was used for this expenses? """+ccs_str+"""
 
 Enter the number of the method: """)
         if (method_num == 'r'): 

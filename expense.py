@@ -120,11 +120,11 @@ class Expense:
             self.setPaymentDate(pay_date.year, pay_date.month, pay_date.day)
         else:
             # debit or cash
-            an_expense.setPaymentMethod(payment_method)
-            an_expense.setPaymentMethodName(payment_method)
+            self.setPaymentMethod(payment_method)
+            self.setPaymentMethodName(payment_method)
             # Payment date becomes the date when the expense was made
             pay_date = self.getDate()
-            an_expense.setPaymentDate(pay_date.year, pay_date.month, pay_date.day)
+            self.setPaymentDate(pay_date.year, pay_date.month, pay_date.day)
 
     def divideExpense(self):
         """
