@@ -56,10 +56,20 @@ class Expense:
         return int(self._payment_date.strftime('%Y%m'))
 
     def getPaymentFortnight(self):
-        ldm = last_day_of_month(self._payment_date).day
-        return self._payment_date.replace(
-            day=15 if self._payment_date.day <= 15 else ldm
-        ).strftime('%Y-%m-%d')
+        if self.payment_method == 'credit':
+            # When credit, payment date is already programed to be fortnightly
+            payment_fortnight = self._payment_date
+        else:
+            if self._payment_date.day < 15:
+                payment_fortnight = last_day_of_month(
+                    self._payment_date - pd.DateOffset(months=1)
+                )
+            else:
+                payment_fortnight = last_day_of_month(
+                    self._payment_date
+                ).replace(day=15)
+
+        return payment_fortnight.strftime('%Y-%m-%d')
 
     def getInstallments(self):
         return self._n_installments
