@@ -56,13 +56,13 @@ class Expense:
         return int(self._payment_date.strftime('%Y%m'))
 
     def getPaymentFortnight(self):
-        if self.payment_method == 'credit':
+        if self._payment_method == 'credit':
             # When credit, payment date is already programed to be fortnightly
             payment_fortnight = self._payment_date
         else:
             if self._payment_date.day < 15:
                 payment_fortnight = last_day_of_month(
-                    self._payment_date - pd.DateOffset(months=1)
+                    self._payment_date - DateOffset(months=1)
                 )
             else:
                 payment_fortnight = last_day_of_month(
