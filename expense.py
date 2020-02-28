@@ -101,7 +101,7 @@ class Expense:
         self._payment_date = date(year, month, day)
 
     def setInstallments(self, n_installments):
-        self._n_installments = n_installments
+        self._n_installments = int(n_installments)
 
     def updateData(
         self, 
