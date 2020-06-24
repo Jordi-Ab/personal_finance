@@ -7,7 +7,7 @@ class AvailableFilesForm(QtWidgets.QDialog):
     def __init__(self, available_files=[], available_methods=[]):
         super(AvailableFilesForm, self).__init__()
         
-        self.createFormGroupBox(available_files, available_methods)        
+        self.createFormGroupBox(available_files)        
 
         buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         buttonBox.accepted.connect(self.accept)
@@ -19,7 +19,7 @@ class AvailableFilesForm(QtWidgets.QDialog):
 
         self.setWindowTitle("Available Files")    
 
-    def createFormGroupBox(self, available_files=[], available_methods=[]):
+    def createFormGroupBox(self, available_files=[]):
         layout = QtWidgets.QFormLayout()
         
         self.label = QtWidgets.QLabel()
@@ -37,25 +37,25 @@ class AvailableFilesForm(QtWidgets.QDialog):
         layout.addWidget(self.availableFiles)
         
         
-        self.methodUsed = QtWidgets.QLabel()
-        self.methodUsed.setGeometry(QtCore.QRect(10, 140, 221, 41))
-        self.methodUsed.setObjectName("methodUsed")
-        self.methodUsed.setText("Select the payment method used \nfor those expenses.")   
-        layout.addWidget(self.methodUsed)
+        #self.methodUsed = QtWidgets.QLabel()
+        #self.methodUsed.setGeometry(QtCore.QRect(10, 140, 221, 41))
+        #self.methodUsed.setObjectName("methodUsed")
+        #self.methodUsed.setText("Select the payment method used \nfor those expenses.")   
+        #layout.addWidget(self.methodUsed)
         
-        self.payMethodOptions = QtWidgets.QComboBox()
-        self.payMethodOptions.setGeometry(QtCore.QRect(250, 150, 191, 26))
-        self.payMethodOptions.setObjectName("payMethodOptions") 
-        for method in available_methods:
-            self.payMethodOptions.addItem(method)
+        #self.payMethodOptions = QtWidgets.QComboBox()
+        #self.payMethodOptions.setGeometry(QtCore.QRect(250, 150, 191, 26))
+        #self.payMethodOptions.setObjectName("payMethodOptions") 
+        #for method in available_methods:
+        #    self.payMethodOptions.addItem(method)
             
-        layout.addWidget(self.payMethodOptions)
+        #layout.addWidget(self.payMethodOptions)
 
         self.formGroupBox = QtWidgets.QGroupBox("File to process")        
         self.formGroupBox.setLayout(layout)
 
     def accept(self):
-        self._output = self.availableFiles.currentIndex(), self.payMethodOptions.currentIndex()
+        self._output = self.availableFiles.currentIndex()
         super(AvailableFilesForm, self).accept()
 
     def get_output(self):
