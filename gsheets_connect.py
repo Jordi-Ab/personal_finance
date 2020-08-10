@@ -122,12 +122,16 @@ class GoogleSheets():
 
         # Assumes first line is header
         header = gsheet.get('values', [])[header_ix] 
+
         # Everything else is data.
         raw_values = gsheet.get('values', [])[header_ix+1:]
+
         if not raw_values:
             print('No data found.')
             return pd.DataFrame(columns = header)
+        
         values = self._values_list_to_array(raw_values, len(header)) 
+        
         return pd.DataFrame(
             values, 
             columns = header

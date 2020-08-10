@@ -1,4 +1,5 @@
 settings.py
+input_data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
