@@ -1,5 +1,7 @@
 settings.py
-input_data/
+input_data/*
+*.xlsx
+*.xls
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
