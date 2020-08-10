@@ -234,7 +234,7 @@ def list_payment_methods(credit_cards_list):
     return ccs_str
 
 def get_next_pay_date(payment_date, cut_day):
-    next_pay_day = min(ceil(cut_day/15)*15, 31)
+    next_pay_day = min(ceil(cut_day/15)*15, 28)
     next_pay_date = date(
         day=next_pay_day, 
         month=payment_date.month,
@@ -242,6 +242,8 @@ def get_next_pay_date(payment_date, cut_day):
     )
     if payment_date.day >= cut_day:
         next_pay_date = next_pay_date + pd.DateOffset(months=1)
+
+    next_pay_date = last_day_of_month(next_pay_date) if next_pay_date.day == 28 else next_pay_date
     return next_pay_date
 
 def askForInstallments(is_credit):
@@ -270,7 +272,7 @@ def askForPaymentMethod():
         ccs = load_credit_cards()
         ccs_str = list_payment_methods(ccs)
         method_num = input("""
-Which payment method was used? """+ccs_str+"""
+Which payment method was used for this expenses? """+ccs_str+"""
 
 Enter the number of the method: """)
         if (method_num == 'r'): 
