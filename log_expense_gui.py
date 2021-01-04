@@ -36,7 +36,6 @@ class AvailableFilesForm(QtWidgets.QDialog):
         
         layout.addWidget(self.availableFiles)
         
-        
         #self.methodUsed = QtWidgets.QLabel()
         #self.methodUsed.setGeometry(QtCore.QRect(10, 140, 221, 41))
         #self.methodUsed.setObjectName("methodUsed")
@@ -47,7 +46,7 @@ class AvailableFilesForm(QtWidgets.QDialog):
         #self.payMethodOptions.setGeometry(QtCore.QRect(250, 150, 191, 26))
         #self.payMethodOptions.setObjectName("payMethodOptions") 
         #for method in available_methods:
-        #    self.payMethodOptions.addItem(method)
+        #   self.payMethodOptions.addItem(method)
             
         #layout.addWidget(self.payMethodOptions)
 
@@ -111,16 +110,11 @@ class Ui_LogExpense(object):
             self.instComboBox.setObjectName("instComboBox")
         
         self.insertAmount = QtWidgets.QLabel(LogExpense)
-<<<<<<< HEAD
         self.insertAmount.setGeometry(QtCore.QRect(120, 80, 261, 21))
-=======
-        self.insertAmount.setGeometry(QtCore.QRect(120, 90, 261, 21))
->>>>>>> dd95193e623f4e0ce88e87904e398e735cc2121e
         self.insertAmount.setText("")
         self.insertAmount.setObjectName("insertAmount")
         
         self.insertDate = QtWidgets.QLabel(LogExpense)
-<<<<<<< HEAD
         self.insertDate.setGeometry(QtCore.QRect(120, 100, 261, 21))
         self.insertDate.setText("")
         self.insertDate.setObjectName("insertDate")
@@ -129,18 +123,12 @@ class Ui_LogExpense(object):
         self.insertCardNum.setGeometry(QtCore.QRect(120, 120, 261, 21))
         self.insertCardNum.setText("")
         self.insertCardNum.setObjectName("insertCardNum")
-=======
-        self.insertDate.setGeometry(QtCore.QRect(120, 120, 261, 21))
-        self.insertDate.setText("")
-        self.insertDate.setObjectName("insertDate")
->>>>>>> dd95193e623f4e0ce88e87904e398e735cc2121e
         
         self.descriptionLabel = QtWidgets.QLabel(LogExpense)
         self.descriptionLabel.setGeometry(QtCore.QRect(40, 60, 81, 20))
         self.descriptionLabel.setObjectName("descriptionLabel")
         
         self.amountLabel = QtWidgets.QLabel(LogExpense)
-<<<<<<< HEAD
         self.amountLabel.setGeometry(QtCore.QRect(40, 80, 81, 20))
         self.amountLabel.setObjectName("amountLabel")
         
@@ -151,14 +139,6 @@ class Ui_LogExpense(object):
         self.cardNumLabel = QtWidgets.QLabel(LogExpense)
         self.cardNumLabel.setGeometry(QtCore.QRect(40, 120, 81, 20))
         self.cardNumLabel.setObjectName("cardNumLabel")
-=======
-        self.amountLabel.setGeometry(QtCore.QRect(40, 90, 81, 20))
-        self.amountLabel.setObjectName("amountLabel")
-        
-        self.dateLabel = QtWidgets.QLabel(LogExpense)
-        self.dateLabel.setGeometry(QtCore.QRect(40, 120, 81, 20))
-        self.dateLabel.setObjectName("dateLabel")
->>>>>>> dd95193e623f4e0ce88e87904e398e735cc2121e
         
         self.buttonBox = QtWidgets.QDialogButtonBox(LogExpense)
         self.buttonBox.setGeometry(QtCore.QRect(340, 340, 164, 32))
@@ -176,10 +156,7 @@ class Ui_LogExpense(object):
         self.descriptionLabel.setText(_translate("LogExpense", "Description:"))
         self.amountLabel.setText(_translate("LogExpense", "Amount:"))
         self.dateLabel.setText(_translate("LogExpense", "Date:"))
-<<<<<<< HEAD
         self.cardNumLabel.setText(_translate("LogExpense", "Card Num:"))
-=======
->>>>>>> dd95193e623f4e0ce88e87904e398e735cc2121e
 
 class LogExpenseForm(QtWidgets.QDialog):
     def __init__(
@@ -189,12 +166,8 @@ class LogExpenseForm(QtWidgets.QDialog):
         expense_date_str,
         expense_description,
         expense_amount,
-<<<<<<< HEAD
         payment_type,
         card_last_4_digits
-=======
-        payment_type
->>>>>>> dd95193e623f4e0ce88e87904e398e735cc2121e
     ):
         super().__init__()
         
@@ -208,10 +181,7 @@ class LogExpenseForm(QtWidgets.QDialog):
         self.ui.insertDescription.setText(expense_description)
         self.ui.insertAmount.setText(expense_amount)
         self.ui.insertDate.setText(expense_date_str)
-<<<<<<< HEAD
         self.ui.insertCardNum.setText(card_last_4_digits)
-=======
->>>>>>> dd95193e623f4e0ce88e87904e398e735cc2121e
         
         self.ui.buttonBox.accepted.connect(self.accept)
         self.ui.buttonBox.rejected.connect(self.reject)

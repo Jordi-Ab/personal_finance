@@ -16,46 +16,46 @@ class Expense:
         self._payment_date = date.today() # Date when the expense should be paid (next month for credit cards)
         self._n_installments = 1 # Number of payments (in the case of MSI)
 
-    def getId(self):
+    def get_id(self):
         return self._id
 
-    def getDescription(self):
+    def get_description(self):
         return self._description
 
-    def getDate(self):
+    def get_date(self):
         return self._date
 
-    def getDateAsString(self):
+    def get_date_as_string(self):
         return self._date.strftime('%Y-%m-%d')
 
-    def getMonthNum(self):
+    def get_month_num(self):
         return int(self._date.strftime('%Y%m'))
 
-    def getMainCategory(self):
+    def get_main_category(self):
         return self._main_category
 
-    def getSubCategory(self):
+    def get_sub_category(self):
         return self._sub_category
 
-    def getAmount(self):
+    def get_amount(self):
         return self._amount
 
-    def getPaymentMethod(self):
+    def get_payment_method(self):
         return self._payment_method
 
-    def getPaymentMethodName(self):
+    def get_payment_method_name(self):
         return self._payment_method_name
 
-    def getPaymentDate(self):
+    def get_paymentdDate(self):
         return self._payment_date
 
-    def getPaymentDateAsString(self):
+    def get_payment_date_as_string(self):
         return self._payment_date.strftime('%Y-%m-%d')
 
-    def getPaymentMonthNum(self):
+    def get_payment_month_num(self):
         return int(self._payment_date.strftime('%Y%m'))
 
-    def getPaymentFortnight(self):
+    def get_payment_fortnight(self):
         if self._payment_method == 'credit':
             # When credit, payment date is already programed to be fortnightly
             payment_fortnight = self._payment_date
@@ -71,39 +71,39 @@ class Expense:
 
         return payment_fortnight.strftime('%Y-%m-%d')
 
-    def getInstallments(self):
+    def get_installments(self):
         return self._n_installments
 
-    def setDescription(self, description):
+    def set_description(self, description):
         self._description = description
 
-    def setDate(self, year, month, day):
+    def set_date(self, year, month, day):
         self._date = date(year, month, day)
 
-    def setMainCategory(self, main_cat_name):
+    def set_main_category(self, main_cat_name):
         self._main_category = main_cat_name
 
-    def setSubCategory(self, sub_cat_name):
+    def set_sub_category(self, sub_cat_name):
         self._sub_category = sub_cat_name
 
-    def setAmount(self, amount):
+    def set_amount(self, amount):
         self._amount = amount
 
-    def setPaymentMethod(self, method):
+    def set_payment_method(self, method):
         if method not in ['cash', 'debit', 'credit']:
             raise ValueError('Only "Cash", "Debit" or "Credit" methods are supported.')
         self._payment_method = method
 
-    def setPaymentMethodName(self, method_name):
+    def set_payment_method_name(self, method_name):
         self._payment_method_name = method_name
 
-    def setPaymentDate(self, year, month, day):
+    def set_payment_date(self, year, month, day):
         self._payment_date = date(year, month, day)
 
-    def setInstallments(self, n_installments):
+    def set_installments(self, n_installments):
         self._n_installments = int(n_installments)
 
-    def updateData(
+    def update_data(
         self, 
         payment_date, 
         description, 
@@ -114,18 +114,18 @@ class Expense:
         n_installments,
         credit_card_used=None
     ):
-        self.setDate(payment_date.year, payment_date.month, payment_date.day)
-        self.setDescription(description)
-        self.setMainCategory(category)
-        self.setSubCategory(sub_category)
-        self.setAmount(amount)
-        self.setInstallments(n_installments)
+        self.set_date(payment_date.year, payment_date.month, payment_date.day)
+        self.set_description(description)
+        self.set_main_category(category)
+        self.set_sub_category(sub_category)
+        self.set_amount(amount)
+        self.set_installments(n_installments)
         if credit_card_used:
-            self.setPaymentMethod('credit')
-            self.setPaymentMethodName(credit_card_used.alias_name)
+            self.set_payment_method('credit')
+            self.set_payment_method_name(credit_card_used.alias_name)
             # Payment date becomes the cut date of the credit card
             cc_cut_date = credit_card_used.cut_date
-            expense_date = self.getDate()
+            expense_date = self.get_date()
             pay_date = get_next_pay_date(expense_date, cc_cut_date)
             self.setPaymentDate(pay_date.year, pay_date.month, pay_date.day)
         else:
@@ -136,41 +136,41 @@ class Expense:
             pay_date = self.getDate()
             self.setPaymentDate(pay_date.year, pay_date.month, pay_date.day)
 
-    def divideExpense(self):
+    def divide_expense(self):
         """
         Returns a list with n Expenses instances, where n = number of installments.
         """
-        installments = self.getInstallments()
+        installments = self.get_installments()
         expenses = []
         for i in range(installments):
             new_exp = Expense(this_id = self.getId())
-            new_exp.setDate(
-                year=self.getDate().year, 
-                month=self.getDate().month, 
-                day=self.getDate().day
+            new_exp.set_date(
+                year=self.get_date().year, 
+                month=self.get_date().month, 
+                day=self.get_date().day
             )
-            new_exp.setMainCategory(self.getMainCategory())
-            new_exp.setSubCategory(self.getSubCategory())
-            new_exp.setPaymentMethod(self.getPaymentMethod())
-            new_exp.setPaymentMethodName(self.getPaymentMethodName())
-            new_exp.setAmount(self.getAmount()/installments)
-            payment_date = self.getPaymentDate() + DateOffset(months=i)
-            new_exp.setPaymentDate(
+            new_exp.set_main_category(self.get_main_category())
+            new_exp.set_sub_category(self.get_sub_category())
+            new_exp.set_payment_method(self.get_payment_nethod())
+            new_exp.set_payment_method_name(self.get_payment_method_name())
+            new_exp.set_amount(self.get_amount()/installments)
+            payment_date = self.get_payment_date() + DateOffset(months=i)
+            new_exp.set_payment_date(
                 year=payment_date.year,
                 month=payment_date.month,
                 day=payment_date.day
             )
-            new_exp.setDescription(
-                self.getDescription()+(' {0} of {1} MSI'.format(i+1, installments) if installments>1 else '')
+            new_exp.set_description(
+                self.get_description()+(' {0} of {1} MSI'.format(i+1, installments) if installments>1 else '')
             )
             expenses.append(new_exp)
 
         return expenses
 
-    def toString(self):
+    def to_string(self):
         string = """Expense:
-    Id:             """+str(self.getId())+"""
-    Date:           """ +self.getDateAsString()+ """
+    Id:             """+str(self.get_id())+"""
+    Date:           """ +self.get_date_as_string()+ """
     Category:       """+self._main_category+"""
     Sub Category:   """+self._sub_category+"""
     Payment Method: """+self._payment_method+"""

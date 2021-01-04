@@ -12,7 +12,7 @@ def load_credit_cards():
                 credit_cards.append(cc)
     return credit_cards
 
-def askYesOrNo(message):
+def ask_yes_or_no(message):
     while (True):
         answer = input(message)
         if (answer[0].lower() == 'y'): return True
@@ -161,9 +161,6 @@ Enter the number of the card you want to modify: """)
         else:
             print("That is not a supported answer.")
             
-        cont = askYesOrNo("Would you like to do something else? ")
+        cont = ask_yes_or_no("Would you like to do something else? ")
         if not cont:
             break
-
-
-
