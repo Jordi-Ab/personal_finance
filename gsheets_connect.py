@@ -1,3 +1,6 @@
+"""
+Code to Connect and Modify Google Sheets.
+"""
 from settings import google_services_credentials
 from oauth2client.client import OAuth2WebServerFlow, GoogleCredentials
 import httplib2
@@ -12,18 +15,6 @@ from datetime import datetime, timedelta
 from time import sleep
 
 google_services_info = {
-    'google_analytics':{
-        'scope': 'https://www.googleapis.com/auth/analytics',
-        'url': 'https://accounts.google.com/o/oauth2/token',
-        'version':'v4',
-        'name':'analytics'
-    },
-    'google_drive':{
-        'scope': 'https://www.googleapis.com/auth/drive',
-        'url': 'https://accounts.google.com/oauth2/v3/token',
-        'version':'v3',
-        'name':'drive'
-    },
     'google_sheets':{
         'scope': 'https://www.googleapis.com/auth/spreadsheets',
         'url': 'https://accounts.google.com/o/oauth2/token',

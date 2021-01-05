@@ -1,3 +1,7 @@
+"""
+Code for prompting Dialog Boxes for user interaction.
+"""
+
 import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
 
@@ -251,5 +255,3 @@ class LogExpenseForm(QtWidgets.QDialog):
                 self.ui.catComboBox.addItem(cat)
 
         self.ui.catComboBox.currentIndexChanged.connect(self.show_subcategories)
-        
-        

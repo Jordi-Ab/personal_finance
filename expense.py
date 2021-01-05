@@ -1,3 +1,6 @@
+"""
+Code for the Expense object
+"""
 from datetime import date
 from pandas import DateOffset
 from helper_functions import last_day_of_month, get_next_pay_date

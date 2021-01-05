@@ -244,7 +244,13 @@ def get_missing_data(data, set_of_cur_data):
     return missing_data
 
 def init_dataframes():
-    # Init Data Frames
+    """
+    Initializes the DataFrames that will containg the necessary 
+    information about the expenses as columns.
+    Returns:
+        installments_df, expenses_df -> DataFrames with the columns needed
+        to log information about the expenses.
+    """
     cols_1 = [
         "expense_id",
         "installment_amount",

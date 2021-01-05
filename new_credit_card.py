@@ -1,9 +1,17 @@
+"""
+Main script to register a new credit card.
+This script should be run on a terminal and all user interaction is through the terminal.
+Credit card objects get saved on 'credit_cards' folder as pickle files.
+"""
 from credit_card_object import CreditCard
 import pickle
 from datetime import datetime
 import os
 
 def load_credit_cards():
+    """
+    Load the credit cards that have already beed registered.
+    """
     credit_cards = []
     for file in os.listdir('credit_cards'):
         if file.endswith('pkl'):
@@ -20,6 +28,9 @@ def ask_yes_or_no(message):
         else: print("Invalid Yes or No answer, try again.")
 
 def modify_info_of_card(card_obj):
+    """
+    Pipeline to modify the information of an existing credit card.
+    """
     actions = [
         'update_bank_name',
         'update_alias_name',
@@ -77,6 +88,10 @@ Enter the action to be taken: """)
     print('Done, data was updated successfully')
 
 def register_new_card():
+    """
+    Pipeline to register a new credit card.
+    The credit card object will be saved under 'credit_cards' folder as a pickle file.
+    """
     print("All right !!, we are abought to register a new credit card, how fun.")
     print(" ")
 
