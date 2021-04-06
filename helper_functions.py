@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
-import datetime
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import os
 import pickle
 from math import ceil
@@ -336,7 +335,7 @@ def update_data(
     credit_card_used
 ):
     
-    date, concept, amount = row
+    date, concept, amount, *rest = row
     
     an_expense.update_data(
         payment_date=date, 
@@ -451,8 +450,8 @@ def number_to_letters(q):
     return result
 
 def last_day_of_month(any_day):
-    next_month = any_day.replace(day=28) + datetime.timedelta(days=4)
-    return next_month - datetime.timedelta(days=next_month.day)
+    next_month = any_day.replace(day=28) + timedelta(days=4)
+    return next_month - timedelta(days=next_month.day)
 
 def cross_join(series, columns):
   if len(series)<2:

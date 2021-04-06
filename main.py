@@ -81,7 +81,7 @@ def log_expenses(missing_data):
                 credit_card_used=cc_used
             )
             # Dive the Expense in installments
-            sub_expenses = an_expense.divideExpense()
+            sub_expenses = an_expense.divide_expense()
             # Save the divided expense on the installments_df DataFrame
             installments_df = hlp.update_installments_data_frame(
                 installments_df, 

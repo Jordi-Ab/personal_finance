@@ -49,7 +49,7 @@ class Expense:
     def get_payment_method_name(self):
         return self._payment_method_name
 
-    def get_paymentdDate(self):
+    def get_payment_date(self):
         return self._payment_date
 
     def get_payment_date_as_string(self):
@@ -130,14 +130,14 @@ class Expense:
             cc_cut_date = credit_card_used.cut_date
             expense_date = self.get_date()
             pay_date = get_next_pay_date(expense_date, cc_cut_date)
-            self.setPaymentDate(pay_date.year, pay_date.month, pay_date.day)
+            self.set_payment_date(pay_date.year, pay_date.month, pay_date.day)
         else:
             # debit or cash
-            self.setPaymentMethod(payment_method)
-            self.setPaymentMethodName(payment_method)
+            self.set_payment_method(payment_method)
+            self.set_payment_method_name(payment_method)
             # Payment date becomes the date when the expense was made
-            pay_date = self.getDate()
-            self.setPaymentDate(pay_date.year, pay_date.month, pay_date.day)
+            pay_date = self.get_date()
+            self.set_payment_date(pay_date.year, pay_date.month, pay_date.day)
 
     def divide_expense(self):
         """
@@ -146,7 +146,7 @@ class Expense:
         installments = self.get_installments()
         expenses = []
         for i in range(installments):
-            new_exp = Expense(this_id = self.getId())
+            new_exp = Expense(this_id = self.get_id())
             new_exp.set_date(
                 year=self.get_date().year, 
                 month=self.get_date().month, 
@@ -154,7 +154,7 @@ class Expense:
             )
             new_exp.set_main_category(self.get_main_category())
             new_exp.set_sub_category(self.get_sub_category())
-            new_exp.set_payment_method(self.get_payment_nethod())
+            new_exp.set_payment_method(self.get_payment_method())
             new_exp.set_payment_method_name(self.get_payment_method_name())
             new_exp.set_amount(self.get_amount()/installments)
             payment_date = self.get_payment_date() + DateOffset(months=i)
